@@ -1,8 +1,5 @@
 #!/bin/python3.7
 
-# Please use this Google doc during your interview (your interviewer will see what you write here). To free your hands for typing, we recommend using a headset or speakerphone.
-
-
 # can go right x_dim times
 # can go down y_dim times
 
