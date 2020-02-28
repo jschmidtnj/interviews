@@ -1,0 +1,29 @@
+# census bureau
+
+- differential privacy - adding noise to statistical queries
+  - cannot reverse engineer queries - from 2006
+  - privacy mechanism for 2021 census - February 2021 (no matter what degree of done)
+  - post processing
+- python and gurobi
+  - 25-50 nodes
+  - 8000 times run, each run has measurements of processes
+  - 60 seconds to 60 hours
+- dashboard to collect machine statistics
+  - apache spark
+  - application engineering work
+    - change engineering
+  - pyspark application
+  - scala calls python
+    - jvm to python bridge
+    - maybe use different java garbage collector to see if that impacts performance
+    - monitoring points
+    - rds store on aws, mysql, not hitting limits at all
+- state of the art
+  - all differential privacy is custom-built
+  - 200,000 - 1 million runs of optimizer
+  - rdd's - 1 per each optimization
+  - dask vs. spark wasn't mature enough when we started
+  - data movement
+- gurobi - optimizes stuff
+  - up to 2000 simultaneous solves
+  - has tracking code for license utilization

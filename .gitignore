@@ -139,3 +139,4 @@ venv.bak/
 *.exe
 *.out
 *.app
+/.metadata/
