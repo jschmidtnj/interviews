@@ -16,7 +16,7 @@ type Connection struct {
 }
 
 func (connection Connection) String() string {
-	return fmt.Sprintf("connection %s: user %s, satellite %s", connection.Color, connection.User, connection.Satellite)
+	return fmt.Sprintf("connection [%s]: user [%s], satellite [%s]", connection.Color, connection.User, connection.Satellite)
 }
 
 type ConnectionPair struct {
@@ -25,7 +25,7 @@ type ConnectionPair struct {
 }
 
 func (pair ConnectionPair) String() string {
-	return fmt.Sprintf("users %d to %d, colors %s to %s", pair.Connection1.User.Id, pair.Connection2.User.Id, pair.Connection1.Color, pair.Connection2.Color)
+	return fmt.Sprintf("users: %d -> %d, colors: %s -> %s", pair.Connection1.User.Id, pair.Connection2.User.Id, pair.Connection1.Color, pair.Connection2.Color)
 }
 
 func (connection Connection) Vector() *mat.VecDense {
@@ -87,14 +87,14 @@ type ConnectionCountPair struct {
 
 type ConnectionCountPairList []ConnectionCountPair
 
-func (p ConnectionCountPairList) Len() int {
-	return len(p)
+func (list ConnectionCountPairList) Len() int {
+	return len(list)
 }
 
-func (p ConnectionCountPairList) Less(i, j int) bool {
-	return p[i].Value.Count < p[j].Value.Count
+func (list ConnectionCountPairList) Less(i, j int) bool {
+	return list[i].Value.Count < list[j].Value.Count
 }
 
-func (p ConnectionCountPairList) Swap(i, j int) {
-	p[i], p[j] = p[j], p[i]
+func (list ConnectionCountPairList) Swap(i, j int) {
+	list[i], list[j] = list[j], list[i]
 }

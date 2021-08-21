@@ -18,7 +18,7 @@ type Element struct {
 }
 
 func (elem Element) String() string {
-	return fmt.Sprintf("%d: %s", elem.Id, elem.Geohash)
+	return fmt.Sprintf("element %d: %s", elem.Id, elem.Geohash)
 }
 
 type ElementPair struct {
