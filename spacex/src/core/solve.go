@@ -26,14 +26,7 @@ func Solve(data map[enums.ElementType][]*types.Element) ([]*types.Connection, er
 	satelliteConnections := map[uint64][]*types.Connection{}
 
 	for _, satellite := range data[enums.Satellite] {
-		closestUserIndex := sort.SearchStrings(userGeohashes, satellite.Geohash)
-
-		inRange := []*types.Element{}
-		if closestUserIndex < len(data[enums.User]) {
-			inRange = getUsersInRange(satellite, data[enums.User], closestUserIndex)
-		}
-
-		// sort users by closest to satellite in range - TODO
+		inRange := getUsersInRange(satellite, data[enums.User], userGeohashes)
 
 		supportedUsers := removeInterfering(satellite, inRange, data[enums.Interferer])
 

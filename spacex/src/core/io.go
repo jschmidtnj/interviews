@@ -110,8 +110,13 @@ func ParseLine(line string, lineNumber int) (*types.Element, error) {
 	}, nil
 }
 
-func OutputConnections(connections types.ConnectionList) {
-	sort.Sort(connections)
+func OutputConnections(connections []*types.Connection) {
+	sort.Slice(connections, func(i, j int) bool {
+		if connections[i].Satellite.Id != connections[j].Satellite.Id {
+			return connections[i].Satellite.Id < connections[j].Satellite.Id
+		}
+		return connections[i].User.Id < connections[j].User.Id
+	})
 
 	currentSatellite := connections[0].Satellite
 	beamNumber := 0

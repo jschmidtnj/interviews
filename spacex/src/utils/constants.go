@@ -2,7 +2,7 @@ package utils
 
 const Epsilon = 1e-8
 
-const Debug = false
+const Debug = true
 
 const MaxConnectionsPerSatellite = 32
 

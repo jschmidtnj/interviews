@@ -1,21 +1,31 @@
 package core
 
 import (
+	"sort"
+
 	"github.com/jschmidtnj/spacex/enums"
 	"github.com/jschmidtnj/spacex/types"
 	"github.com/jschmidtnj/spacex/utils"
+	"github.com/masatana/go-textdistance"
 	"gonum.org/v1/gonum/mat"
 )
 
-func getUsersInRange(satellite *types.Element, users []*types.Element, startIndex int) []*types.Element {
-	if (types.Connection{
-		User:      users[startIndex],
-		Satellite: satellite,
-	}.Angle()) >= utils.MaxSatelliteAngle {
-		return []*types.Element{}
+func getUsersInRange(satellite *types.Element, users []*types.Element, userGeohashes []string) []*types.Element {
+	closestUserIndex := sort.SearchStrings(userGeohashes, satellite.Geohash)
+
+	usersInRange := []*types.Element{}
+	if closestUserIndex == len(users) {
+		return usersInRange
 	}
 
-	leftIndex := startIndex
+	if (types.Connection{
+		User:      users[closestUserIndex],
+		Satellite: satellite,
+	}.Angle()) >= utils.MaxSatelliteAngle {
+		return usersInRange
+	}
+
+	leftIndex := closestUserIndex
 
 	for {
 		if leftIndex == 0 {
@@ -31,7 +41,7 @@ func getUsersInRange(satellite *types.Element, users []*types.Element, startInde
 		leftIndex--
 	}
 
-	rightIndex := startIndex
+	rightIndex := closestUserIndex
 
 	for {
 		if rightIndex == len(users)-1 {
@@ -47,9 +57,15 @@ func getUsersInRange(satellite *types.Element, users []*types.Element, startInde
 		rightIndex++
 	}
 
-	inRange := users[leftIndex : rightIndex+1]
+	usersInRange = users[leftIndex : rightIndex+1]
 
-	return inRange
+	sort.Slice(usersInRange, func(i, j int) bool {
+		distance1 := textdistance.LevenshteinDistance(usersInRange[i].Geohash, satellite.Geohash)
+		distance2 := textdistance.LevenshteinDistance(usersInRange[j].Geohash, satellite.Geohash)
+		return distance1 < distance2
+	})
+
+	return usersInRange
 }
 
 func removeInterfering(satellite *types.Element, users []*types.Element, interfering []*types.Element) []*types.Element {
@@ -170,21 +186,13 @@ func limitSatelliteConnections(satellites []*types.Element, satelliteConnections
 	for _, satellite := range satellites {
 		possibleConnections := satelliteConnections[satellite.Id]
 		if len(possibleConnections) > utils.MaxConnectionsPerSatellite {
-			currentUsers := map[uint64]types.ConnectionCountData{}
-			for _, connection := range possibleConnections {
-				currentUsers[connection.User.Id] = types.ConnectionCountData{
-					Count:      userCount[connection.User.Id],
-					Connection: connection,
-				}
-			}
-			currentUsersSorted := types.SortConnectionCounts(currentUsers)
-			newConnections := make([]*types.Connection, utils.MaxConnectionsPerSatellite)
 
 			// remove far away vs remove with more connection options (or both)??? TODO
-			for i := range newConnections {
-				newConnections[i] = currentUsersSorted[i].Value.Connection
-			}
-			possibleConnections = newConnections
+			// TODO - try removing connections that are further away
+			sort.Slice(possibleConnections, func(i, j int) bool {
+				return userCount[possibleConnections[i].User.Id] < userCount[possibleConnections[j].User.Id]
+			})
+			possibleConnections = possibleConnections[:utils.MaxConnectionsPerSatellite]
 			satelliteConnections[satellite.Id] = possibleConnections
 		}
 		connectionsAfterLimit = append(connectionsAfterLimit, possibleConnections...)

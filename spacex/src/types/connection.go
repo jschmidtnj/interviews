@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	"sort"
 
 	"github.com/jschmidtnj/spacex/enums"
 	"github.com/jschmidtnj/spacex/utils"
@@ -38,63 +37,4 @@ func (connection Connection) Angle() float64 {
 	angleBetween := utils.AngleBetween(connection.User.Data, connection.Vector())
 	// fmt.Printf("%s: %f\n", connection, angleBetween)
 	return angleBetween
-}
-
-// SORTING
-
-type ConnectionList []*Connection
-
-func (list ConnectionList) Len() int {
-	return len(list)
-}
-
-func (list ConnectionList) Less(i, j int) bool {
-	if list[i].Satellite.Id != list[j].Satellite.Id {
-		return list[i].Satellite.Id < list[j].Satellite.Id
-	}
-	return list[i].User.Id < list[j].User.Id
-}
-
-func (list ConnectionList) Swap(i, j int) {
-	list[i], list[j] = list[j], list[i]
-}
-
-// sort connection counts
-
-type ConnectionCountData struct {
-	Count      int
-	Connection *Connection
-}
-
-func SortConnectionCounts(data map[uint64]ConnectionCountData) ConnectionCountPairList {
-	list := make(ConnectionCountPairList, len(data))
-	i := 0
-	for key, val := range data {
-		list[i] = ConnectionCountPair{
-			key,
-			val,
-		}
-		i++
-	}
-	sort.Sort(sort.Reverse(list))
-	return list
-}
-
-type ConnectionCountPair struct {
-	Key   uint64
-	Value ConnectionCountData
-}
-
-type ConnectionCountPairList []ConnectionCountPair
-
-func (list ConnectionCountPairList) Len() int {
-	return len(list)
-}
-
-func (list ConnectionCountPairList) Less(i, j int) bool {
-	return list[i].Value.Count < list[j].Value.Count
-}
-
-func (list ConnectionCountPairList) Swap(i, j int) {
-	list[i], list[j] = list[j], list[i]
 }
