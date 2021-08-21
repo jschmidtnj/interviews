@@ -1,0 +1,4 @@
+# ignore everything apart from solution
+test_cases/*.txt
+evaluate.py
+*.pdf
