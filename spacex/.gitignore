@@ -2,3 +2,5 @@
 test_cases/*.txt
 evaluate.py
 *.pdf
+!*.mod
+spacex
