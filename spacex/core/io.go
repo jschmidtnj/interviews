@@ -123,6 +123,7 @@ func OutputConnections(connections []*types.Connection) {
 			currentSatellite = connection.Satellite
 		}
 		beamNumber++
-		fmt.Printf("sat %d beam %d user %d color %s\n", connection.Satellite.Id, beamNumber, connection.User.Id, connection.Color)
+		fmt.Printf("%s %d beam %d %s %d color %s\n", enums.Satellite, connection.Satellite.Id,
+			beamNumber, enums.User, connection.User.Id, connection.Color)
 	}
 }
