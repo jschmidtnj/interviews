@@ -10,6 +10,9 @@ import (
 	"github.com/jschmidtnj/spacex/utils"
 )
 
+// Solve executes the algorithm for successively applying constraints to possible
+// user-satellite connections, resulting in a set of connections that is viable
+// in the system. Helper functions are used to break up the logic.
 func Solve(data map[enums.ElementType][]*types.Element) ([]*types.Connection, error) {
 	for _, elements := range data {
 		sort.Slice(elements, func(i, j int) bool {
@@ -71,9 +74,7 @@ func Solve(data map[enums.ElementType][]*types.Element) ([]*types.Connection, er
 		logSatelliteStats(satelliteCount)
 	}
 
-	connectionsAfterLimit := limitSatelliteConnections(data[enums.Satellite], satelliteConnections)
-
-	removedDuplicationsConnections := removeDuplicates(connectionsAfterLimit, satelliteConnections)
+	removedDuplicationsConnections := limitSatelliteConnections(data[enums.Satellite], satelliteConnections)
 
 	if utils.Debug {
 		log.Printf("final number connections: %d / %d (%.3f%%)\n", len(removedDuplicationsConnections),

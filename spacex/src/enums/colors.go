@@ -1,7 +1,9 @@
 package enums
 
+// Color is an enum for a connection color (frequency).
 type Color int
 
+// Colors enum.
 const (
 	ColorA Color = iota
 	ColorB
@@ -9,6 +11,7 @@ const (
 	ColorD
 )
 
+// Colors list of Color options.
 var Colors = []Color{
 	ColorA,
 	ColorB,
@@ -16,6 +19,7 @@ var Colors = []Color{
 	ColorD,
 }
 
+// String is a toString method for colors.
 func (color Color) String() string {
 	switch color {
 	case ColorA:

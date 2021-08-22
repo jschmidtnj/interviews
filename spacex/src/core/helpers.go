@@ -10,6 +10,8 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
+// getUsersInRange outputs the users from the users list closest to the satellite and
+// within range of the satellite.
 func getUsersInRange(satellite *types.Element, users []*types.Element, userGeohashes []string) []*types.Element {
 	closestUserIndex := sort.SearchStrings(userGeohashes, satellite.Geohash)
 
@@ -68,6 +70,8 @@ func getUsersInRange(satellite *types.Element, users []*types.Element, userGeoha
 	return usersInRange
 }
 
+// removeInterfering tests for interference from external satellites,
+// and if it exists, marks those user connections impossible.
 func removeInterfering(satellite *types.Element, users []*types.Element, interfering []*types.Element) []*types.Element {
 	supportedUsers := []*types.Element{}
 	for _, user := range users {
@@ -94,6 +98,8 @@ func removeInterfering(satellite *types.Element, users []*types.Element, interfe
 	return supportedUsers
 }
 
+// getLocalInterferences returns the pairs of connections that interfere with one another
+// for a single satellite.
 func getLocalInterferences(satellite *types.Element, users []*types.Element) []*types.ConnectionPair {
 	interferences := []*types.ConnectionPair{}
 	userAngles := make(map[uint64]*mat.VecDense, len(users))
@@ -131,6 +137,9 @@ func getLocalInterferences(satellite *types.Element, users []*types.Element) []*
 	return interferences
 }
 
+// colorConnections constructs a graph of connections for a single satellite that interfere with one
+// another and adds different colors to mitigate this interference. It outputs the connections that
+// would still interfere as well as a map between the user id and the color of the connection.
 func colorConnections(interferencePairs []*types.ConnectionPair) ([]*types.Connection, map[uint64]enums.Color) {
 	currentColorindex := 0
 	for _, interferencePair := range interferencePairs {
@@ -160,6 +169,8 @@ func colorConnections(interferencePairs []*types.ConnectionPair) ([]*types.Conne
 	return remainingConnections, colorMap
 }
 
+// getUserCount generates a map between user ids and the number of connections possible
+// for each user.
 func getUserCount(satelliteConnections map[uint64][]*types.Connection) map[uint64]int {
 	userCount := map[uint64]int{}
 	for _, possibleConnections := range satelliteConnections {
@@ -174,6 +185,8 @@ func getUserCount(satelliteConnections map[uint64][]*types.Connection) map[uint6
 	return userCount
 }
 
+// limitSatelliteConnections truncates the number of connections a satellite can have
+// to the maximum allowed, as defined in the constants file.
 func limitSatelliteConnections(satellites []*types.Element, satelliteConnections map[uint64][]*types.Connection) []*types.Connection {
 	userCount := getUserCount(satelliteConnections)
 
@@ -183,14 +196,29 @@ func limitSatelliteConnections(satellites []*types.Element, satelliteConnections
 
 	connectionsAfterLimit := []*types.Connection{}
 
+	seenUsers := map[uint64]bool{}
 	for _, satellite := range satellites {
-		possibleConnections := satelliteConnections[satellite.Id]
-		if len(possibleConnections) > utils.MaxConnectionsPerSatellite {
+		possibleConnections := []*types.Connection{}
+		for _, connection := range satelliteConnections[satellite.Id] {
+			if _, ok := seenUsers[connection.User.Id]; ok {
+				continue
+			}
+			seenUsers[connection.User.Id] = true
+			possibleConnections = append(possibleConnections, connection)
+		}
 
-			// remove far away vs remove with more connection options (or both)??? TODO
-			// TODO - try removing connections that are further away
+		if len(possibleConnections) > utils.MaxConnectionsPerSatellite {
 			sort.Slice(possibleConnections, func(i, j int) bool {
-				return userCount[possibleConnections[i].User.Id] < userCount[possibleConnections[j].User.Id]
+				count1 := userCount[possibleConnections[i].User.Id]
+				count2 := userCount[possibleConnections[j].User.Id]
+				if count1 != count2 {
+					return count1 > count2
+				}
+				distance1 := textdistance.LevenshteinDistance(possibleConnections[i].User.Geohash,
+					possibleConnections[i].Satellite.Geohash)
+				distance2 := textdistance.LevenshteinDistance(possibleConnections[j].User.Geohash,
+					possibleConnections[j].Satellite.Geohash)
+				return distance1 > distance2
 			})
 			possibleConnections = possibleConnections[:utils.MaxConnectionsPerSatellite]
 			satelliteConnections[satellite.Id] = possibleConnections
@@ -199,24 +227,4 @@ func limitSatelliteConnections(satellites []*types.Element, satelliteConnections
 	}
 
 	return connectionsAfterLimit
-}
-
-func removeDuplicates(connectionsAfterLimit []*types.Connection, satelliteConnections map[uint64][]*types.Connection) []*types.Connection {
-	removedDuplicationsConnections := []*types.Connection{}
-
-	userCount := getUserCount(satelliteConnections)
-
-	if utils.Debug {
-		logUserStats(userCount)
-	}
-
-	// remove duplicates at the end
-	for _, connection := range connectionsAfterLimit {
-		count := userCount[connection.User.Id]
-		if count == 1 {
-			removedDuplicationsConnections = append(removedDuplicationsConnections, connection)
-		}
-	}
-
-	return removedDuplicationsConnections
 }

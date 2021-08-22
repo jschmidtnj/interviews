@@ -16,6 +16,7 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
+// ValidateArgs reads the argv and makes sure there is a valid input file provided.
 func ValidateArgs() string {
 	if len(os.Args) < 2 {
 		log.Fatal("no input file provided")
@@ -30,6 +31,9 @@ func ValidateArgs() string {
 	return inputFilePath
 }
 
+// ReadFile takes a file input path as a parameter, and generates a map of
+// ElementType to list of Element objects. It uses the ParseLine function
+// to generate Element objects that are then inserted in the map.
 func ReadFile(inputFilePath string) (map[enums.ElementType][]*types.Element, error) {
 	inputFile, err := os.Open(inputFilePath)
 	if err != nil {
@@ -67,6 +71,8 @@ func ReadFile(inputFilePath string) (map[enums.ElementType][]*types.Element, err
 	return data, nil
 }
 
+// ParseLine takes in a line (string) and the given line number,
+// and parses the line into an Element object.
 func ParseLine(line string, lineNumber int) (*types.Element, error) {
 	elementsPerLine := 5
 
@@ -110,6 +116,8 @@ func ParseLine(line string, lineNumber int) (*types.Element, error) {
 	}, nil
 }
 
+// OutputConnections prints the connections to stdout.
+// connections is a list of Connection objects
 func OutputConnections(connections []*types.Connection) {
 	sort.Slice(connections, func(i, j int) bool {
 		if connections[i].Satellite.Id != connections[j].Satellite.Id {
@@ -117,6 +125,10 @@ func OutputConnections(connections []*types.Connection) {
 		}
 		return connections[i].User.Id < connections[j].User.Id
 	})
+
+	if len(connections) == 0 {
+		return
+	}
 
 	currentSatellite := connections[0].Satellite
 	beamNumber := 0

@@ -9,6 +9,7 @@ import (
 	"github.com/jschmidtnj/spacex/utils"
 )
 
+// main entry point
 func main() {
 	// seed random numbers
 	rand.Seed(42)

@@ -6,6 +6,7 @@ import (
 	"github.com/jschmidtnj/spacex/utils"
 )
 
+// logUserStats outputs data on the user count.
 func logUserStats(userCount map[uint64]int) {
 	numSingleUsers := 0
 	numDuplicatedUsers := 0
@@ -19,6 +20,7 @@ func logUserStats(userCount map[uint64]int) {
 	log.Printf("users: %d single, %d duplicated\n", numSingleUsers, numDuplicatedUsers)
 }
 
+// logSatelliteStats logs data on the satellite counts.
 func logSatelliteStats(satelliteCount map[uint64]int) {
 	numSatellitesUnderLimit := 0
 	numSatellitesOverLimit := 0
