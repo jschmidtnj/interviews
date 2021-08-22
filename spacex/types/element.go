@@ -3,7 +3,7 @@ package types
 import (
 	"fmt"
 
-	"github.com/jschmidtnj/spacex/enums"
+	"github.com/jschmidtnj/starlink/enums"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -21,5 +21,5 @@ type Element struct {
 
 // String is a toString method for the Element object.
 func (elem Element) String() string {
-	return fmt.Sprintf("element %d: %s", elem.Id, elem.Geohash)
+	return fmt.Sprintf("%s %d: %s", elem.ElementType, elem.Id, elem.Geohash)
 }

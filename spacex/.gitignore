@@ -3,7 +3,8 @@ test_cases/*.txt
 *.py
 *.pdf
 !*.mod
-spacex
+*.png
+starlink
 
 # Binaries for programs and plugins
 *.exe

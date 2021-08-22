@@ -3,8 +3,8 @@ package types
 import (
 	"fmt"
 
-	"github.com/jschmidtnj/spacex/enums"
-	"github.com/jschmidtnj/spacex/utils"
+	"github.com/jschmidtnj/starlink/enums"
+	"github.com/jschmidtnj/starlink/utils"
 	"gonum.org/v1/gonum/mat"
 )
 

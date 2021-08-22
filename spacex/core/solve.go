@@ -5,9 +5,9 @@ import (
 	"math/rand"
 	"sort"
 
-	"github.com/jschmidtnj/spacex/enums"
-	"github.com/jschmidtnj/spacex/types"
-	"github.com/jschmidtnj/spacex/utils"
+	"github.com/jschmidtnj/starlink/enums"
+	"github.com/jschmidtnj/starlink/types"
+	"github.com/jschmidtnj/starlink/utils"
 )
 
 // Solve executes the algorithm for successively applying constraints to possible
@@ -69,14 +69,14 @@ func Solve(data map[enums.ElementType][]*types.Element) ([]*types.Connection, er
 		satelliteCount[satellite.Id] = len(supportedUsers)
 	}
 
-	if utils.Debug {
+	if utils.Opts.Debug {
 		log.Printf("number of connections in range: %d\n", numInRange)
 		logSatelliteStats(satelliteCount)
 	}
 
 	removedDuplicationsConnections := limitSatelliteConnections(data[enums.Satellite], satelliteConnections)
 
-	if utils.Debug {
+	if utils.Opts.Debug {
 		log.Printf("final number connections: %d / %d (%.3f%%)\n", len(removedDuplicationsConnections),
 			len(data[enums.User]), float64(len(removedDuplicationsConnections))*100/float64(len(data[enums.User])))
 	}

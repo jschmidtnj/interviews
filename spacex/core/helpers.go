@@ -1,14 +1,37 @@
 package core
 
 import (
+	"os"
 	"sort"
 
-	"github.com/jschmidtnj/spacex/enums"
-	"github.com/jschmidtnj/spacex/types"
-	"github.com/jschmidtnj/spacex/utils"
+	"github.com/jschmidtnj/starlink/enums"
+	"github.com/jschmidtnj/starlink/types"
+	"github.com/jschmidtnj/starlink/utils"
 	"github.com/masatana/go-textdistance"
 	"gonum.org/v1/gonum/mat"
 )
+
+// getNumCheckOutOfRange returns the number of consecutive checks
+// the getUsersInRange function will perform on users not in range
+func getNumCheckOutOfRange(numUsers int) int {
+	const percent = 10
+	const min = 1
+	const max = 100
+	const performance = 5000
+
+	if utils.Opts.MaxPerformance {
+		return performance
+	}
+
+	numCheckOutOfRange := numUsers / percent
+	if numCheckOutOfRange < min {
+		numCheckOutOfRange = min
+	} else if numCheckOutOfRange > max {
+		numCheckOutOfRange = max
+	}
+
+	return numCheckOutOfRange
+}
 
 // getUsersInRange outputs the users from the users list closest to the satellite and
 // within range of the satellite.
@@ -27,39 +50,61 @@ func getUsersInRange(satellite *types.Element, users []*types.Element, userGeoha
 		return usersInRange
 	}
 
-	leftIndex := closestUserIndex
+	if utils.Opts.Plot {
+		plotDistances(users, satellite)
+		os.Exit(0)
+	}
 
-	for {
-		if leftIndex == 0 {
-			break
-		}
+	usersInRange = append(usersInRange, users[closestUserIndex])
+
+	numCheckOutOfRange := getNumCheckOutOfRange(len(users))
+
+	leftIndex := closestUserIndex - 1
+	if leftIndex < 0 {
+		leftIndex = len(users) - 1
+	}
+	lastLeftIndex := leftIndex
+
+	outOfRangeCount := 0
+	for leftIndex != closestUserIndex && outOfRangeCount < numCheckOutOfRange {
+		lastLeftIndex = leftIndex
 		leftAngle := types.Connection{
-			User:      users[leftIndex-1],
+			User:      users[leftIndex],
 			Satellite: satellite,
 		}.Angle()
-		if leftAngle >= utils.MaxSatelliteAngle {
-			break
+		if leftAngle < utils.MaxSatelliteAngle {
+			outOfRangeCount = 0
+			usersInRange = append(usersInRange, users[leftIndex])
+		} else {
+			outOfRangeCount++
 		}
 		leftIndex--
+		// wrap around
+		if leftIndex < 0 {
+			leftIndex = len(users) - 1
+		}
 	}
 
-	rightIndex := closestUserIndex
+	rightIndex := (closestUserIndex + 1) % len(users)
 
-	for {
-		if rightIndex == len(users)-1 {
-			break
-		}
+	outOfRangeCount = 0
+	for rightIndex != lastLeftIndex && outOfRangeCount < numCheckOutOfRange {
 		rightAngle := types.Connection{
-			User:      users[rightIndex+1],
+			User:      users[rightIndex],
 			Satellite: satellite,
 		}.Angle()
-		if rightAngle >= utils.MaxSatelliteAngle {
-			break
+		if rightAngle < utils.MaxSatelliteAngle {
+			outOfRangeCount = 0
+			usersInRange = append(usersInRange, users[rightIndex])
+		} else {
+			outOfRangeCount++
 		}
 		rightIndex++
+		// wrap around
+		if rightIndex == len(users) {
+			rightIndex = 0
+		}
 	}
-
-	usersInRange = users[leftIndex : rightIndex+1]
 
 	sort.Slice(usersInRange, func(i, j int) bool {
 		distance1 := textdistance.LevenshteinDistance(usersInRange[i].Geohash, satellite.Geohash)
@@ -190,7 +235,7 @@ func getUserCount(satelliteConnections map[uint64][]*types.Connection) map[uint6
 func limitSatelliteConnections(satellites []*types.Element, satelliteConnections map[uint64][]*types.Connection) []*types.Connection {
 	userCount := getUserCount(satelliteConnections)
 
-	if utils.Debug {
+	if utils.Opts.Debug {
 		logUserStats(userCount)
 	}
 

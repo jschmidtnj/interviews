@@ -6,6 +6,13 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
+// EuclidianDistance gets distance between two vectors
+func EuclidianDistance(vector1 *mat.VecDense, vector2 *mat.VecDense) float64 {
+	difference := mat.VecDenseCopyOf(vector1)
+	difference.SubVec(vector1, vector2)
+	return mat.Norm(difference, 2)
+}
+
 // VectorWithVal creates a vector with length n with all elements of value val.
 func VectorWithVal(n int, val float64) *mat.VecDense {
 	data := make([]float64, n)

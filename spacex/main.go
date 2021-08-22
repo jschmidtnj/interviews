@@ -5,8 +5,8 @@ import (
 	"log"
 	"math/rand"
 
-	"github.com/jschmidtnj/spacex/core"
-	"github.com/jschmidtnj/spacex/utils"
+	"github.com/jschmidtnj/starlink/core"
+	"github.com/jschmidtnj/starlink/utils"
 )
 
 // main entry point
@@ -14,7 +14,7 @@ func main() {
 	// seed random numbers
 	rand.Seed(42)
 
-	inputFilePath := core.ValidateArgs()
+	inputFilePath := utils.ParseArgs()
 
 	fileData, err := core.ReadFile(inputFilePath)
 	if err != nil {
@@ -26,7 +26,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if !utils.Debug {
+	if !utils.Opts.Debug {
 		core.OutputConnections(connections)
 	}
 }

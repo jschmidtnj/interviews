@@ -9,27 +9,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jschmidtnj/spacex/enums"
-	"github.com/jschmidtnj/spacex/types"
-	"github.com/jschmidtnj/spacex/utils"
+	"github.com/jschmidtnj/starlink/enums"
+	"github.com/jschmidtnj/starlink/types"
+	"github.com/jschmidtnj/starlink/utils"
 	"github.com/mmcloughlin/geohash"
 	"gonum.org/v1/gonum/mat"
 )
-
-// ValidateArgs reads the argv and makes sure there is a valid input file provided.
-func ValidateArgs() string {
-	if len(os.Args) < 2 {
-		log.Fatal("no input file provided")
-	}
-	inputFilePath := os.Args[1]
-	if _, err := os.Stat(inputFilePath); err != nil {
-		if os.IsNotExist(err) {
-			log.Fatalf("file %s does not exist", inputFilePath)
-		}
-		log.Fatalf("cannot stat file %s", inputFilePath)
-	}
-	return inputFilePath
-}
 
 // ReadFile takes a file input path as a parameter, and generates a map of
 // ElementType to list of Element objects. It uses the ParseLine function
