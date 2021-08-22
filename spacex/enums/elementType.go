@@ -25,9 +25,9 @@ func (elem ElementType) String() string {
 	case User:
 		return "user"
 	case Satellite:
-		return "satellite"
+		return "sat"
 	case Interferer:
-		return "interefer"
+		return "interferer"
 	default:
 		return ""
 	}
@@ -36,11 +36,11 @@ func (elem ElementType) String() string {
 // NewElementType is a method for converting strings to ElementType enums.
 func NewElementType(input string) (ElementType, error) {
 	switch input {
-	case "user":
+	case User.String():
 		return User, nil
-	case "sat":
+	case Satellite.String():
 		return Satellite, nil
-	case "interferer":
+	case Interferer.String():
 		return Interferer, nil
 	default:
 		return -1, fmt.Errorf("invalid element provided: %s", input)
