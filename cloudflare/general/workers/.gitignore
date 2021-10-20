@@ -1,0 +1,7 @@
+dist
+node_modules
+transpiled
+/.idea/
+
+# ignore config (has sensitive data)
+wrangler.toml
