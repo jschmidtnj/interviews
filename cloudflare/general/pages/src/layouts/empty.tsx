@@ -3,6 +3,7 @@ import { IntlProvider } from 'react-intl';
 import Messages from 'locale/type';
 import { useLocation } from 'react-router-dom';
 import locales from 'locale/locales';
+import React from 'react';
 
 interface LayoutArgs {
   children: ReactNode;

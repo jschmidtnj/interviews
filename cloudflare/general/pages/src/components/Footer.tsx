@@ -1,9 +1,10 @@
 import { FunctionComponent } from 'react';
 import { chakra, Link, useColorModeValue, Flex } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
+import React from 'react';
 
-const githubLink = 'https://github.com/SSMIF-Quant/quant';
-const docsLink = 'https://quant.ssmif.com';
+const githubLink = 'https://github.com/jschmidtnj/interviews/tree/master/cloudflare';
+const docsLink = 'https://github.com/jschmidtnj/interviews/blob/master/cloudflare/README.md';
 
 const Footer: FunctionComponent = () => {
   return (
@@ -13,23 +14,23 @@ const Footer: FunctionComponent = () => {
       textColor={useColorModeValue('gray.300', 'gray.900')}
     >
       <Flex align="center" justifyContent="center">
-        <chakra.p>© {new Date().getFullYear()}, SSMIF Quant</chakra.p>
-        <chakra.div mx={2}>|</chakra.div>
-        <RouterLink to="/changelog">
-          <Link
-            href="/changelog"
-            _hover={{
-              color: useColorModeValue('red.400', 'red.800'),
-            }}
-          >
-            changelog
-          </Link>
-        </RouterLink>
+        <chakra.p>© {new Date().getFullYear()} Joshua Schmidt</chakra.p>
         <chakra.div mx={2}>|</chakra.div>
         <Link
-          href={githubLink}
+          to="/changelog"
+          as={RouterLink}
           _hover={{
-            color: useColorModeValue('red.400', 'red.800'),
+            color: useColorModeValue('teal', 'teal.800'),
+          }}
+        >
+          changelog
+        </Link>
+        <chakra.div mx={2}>|</chakra.div>
+        <Link
+          to={githubLink}
+          as={RouterLink}
+          _hover={{
+            color: useColorModeValue('teal', 'teal.800'),
           }}
           target="_blank"
         >
@@ -37,9 +38,10 @@ const Footer: FunctionComponent = () => {
         </Link>
         <chakra.div mx={2}>|</chakra.div>
         <Link
-          href={docsLink}
+          to={docsLink}
+          as={RouterLink}
           _hover={{
-            color: useColorModeValue('red.400', 'red.800'),
+            color: useColorModeValue('teal', 'teal.800'),
           }}
           target="_blank"
         >

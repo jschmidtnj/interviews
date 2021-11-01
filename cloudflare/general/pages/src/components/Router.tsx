@@ -1,15 +1,11 @@
+import React from 'react';
 import { useEffect } from 'react';
 import {
   Switch,
   Route,
 } from "react-router-dom";
 import { createAxiosClient } from "utils/axios";
-
-const Home = () => (
-  <div>
-    <h2>Home</h2>
-  </div>
-);
+import Home from 'pages';
 
 export const Router = () => {
   useEffect(() => {

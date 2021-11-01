@@ -4,6 +4,7 @@ import Footer from 'components/Footer';
 import EmptyLayout from './empty';
 import { Box } from '@chakra-ui/react';
 import Router from 'components/Router';
+import React from 'react';
 
 const Layout: FunctionComponent = () => {
   return (

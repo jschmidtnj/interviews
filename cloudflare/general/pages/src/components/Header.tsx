@@ -18,6 +18,7 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 import VisibilitySensor from 'react-visibility-sensor';
+import React from 'react';
 
 interface HeaderLink {
   name: string;
@@ -26,29 +27,13 @@ interface HeaderLink {
 
 const links: HeaderLink[] = [
   {
-    name: 'Risk',
-    href: '/risk',
+    name: 'Login',
+    href: '/login',
   },
   {
-    name: 'Holdings',
-    href: '/holdings',
-  },
-  {
-    name: 'Performance',
-    href: '/performance',
-  },
-  {
-    name: 'Stop Loss',
-    href: '/stop-loss',
-  },
-  {
-    name: 'Transactions',
-    href: '/transactions',
-  },
-  {
-    name: 'Factor Model',
-    href: '/factor-model',
-  },
+    name: 'About',
+    href: '/about',
+  }
 ];
 
 interface NavLinkArgs {
@@ -56,22 +41,21 @@ interface NavLinkArgs {
 }
 
 const NavLink: FunctionComponent<NavLinkArgs> = (args) => (
-  <RouterLink to={args.linkData.href}>
-    <Link
-      px={2}
-      py={1}
-      rounded={'md'}
-      _hover={{
-        textDecoration: 'none',
-        color: useColorModeValue('gray.700', 'gray.200'),
-        bg: useColorModeValue('gray.200', 'gray.700'),
-      }}
-      color="gray.100"
-      href={args.linkData.href}
-    >
-      {args.linkData.name}
-    </Link>
-  </RouterLink>
+  <Link
+    to={args.linkData.href}
+    as={RouterLink}
+    px={2}
+    py={1}
+    rounded={'md'}
+    _hover={{
+      textDecoration: 'none',
+      color: useColorModeValue('gray.700', 'gray.200'),
+      bg: useColorModeValue('gray.200', 'gray.700'),
+    }}
+    color="gray.100"
+  >
+    {args.linkData.name}
+  </Link>
 );
 
 const Logout: FunctionComponent = () => {
@@ -113,9 +97,10 @@ const Header: FunctionComponent = () => {
   const loggedIn = false;
 
   return (
-    <Box bg={useColorModeValue('red.600', 'red.800')}>
+    <Box bg={useColorModeValue('teal', 'teal.800')}>
       <Container maxW="container.lg">
         <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
+          {/* TODO - adding this causes a findDOMNode error in the app. */}
           <VisibilitySensor
             onChange={setHamburgerVisible}
             partialVisibility={true}
@@ -130,9 +115,9 @@ const Header: FunctionComponent = () => {
                 )
               }
               color={useColorModeValue('gray.100', 'gray.700')}
-              bg={useColorModeValue('red.500', 'red.700')}
+              bg={useColorModeValue('teal', 'teal.700')}
               _hover={{
-                bg: useColorModeValue('red.400', 'red.800'),
+                bg: useColorModeValue('teal', 'teal.800'),
               }}
               aria-label={'Open Menu'}
               display={{ md: !isOpen ? 'none' : 'inherit' }}
@@ -140,25 +125,24 @@ const Header: FunctionComponent = () => {
             />
           </VisibilitySensor>
           <HStack spacing={8} alignItems={'center'}>
-            <RouterLink to="/">
-              <Link
-                px={2}
-                py={1}
+            <Link
+              to="/"
+              as={RouterLink}
+              px={2}
+              py={1}
+              color="gray.100"
+              _hover={{
+                textDecoration: 'none',
+              }}
+            >
+              <Heading
+                size="md"
+                textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
                 color="gray.100"
-                href="/"
-                _hover={{
-                  textDecoration: 'none',
-                }}
               >
-                <Heading
-                  size="md"
-                  textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
-                  color="gray.100"
-                >
-                  Post It
-                </Heading>
-              </Link>
-            </RouterLink>
+                Post It
+              </Heading>
+            </Link>
             <Box display={{ base: 'none', md: 'flex' }}>
               <HStack as={'nav'} spacing={4}>
                 {links.map((link) => (

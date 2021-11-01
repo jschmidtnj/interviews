@@ -2,13 +2,17 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import { useSecure } from './mode';
 import { configure } from 'axios-hooks';
 import * as Sentry from '@sentry/browser';
+import { Integrations } from '@sentry/tracing';
 
 Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_URL,
+  dsn: process.env.SENTRY_URL,
+  integrations: [new Integrations.BrowserTracing()],
+
+  tracesSampleRate: 1.0,
 });
 
 export const getAPIURL = (): string => {
-  return `${useSecure ? 'https' : 'http'}://${process.env.NEXT_PUBLIC_API_URL}`;
+  return `${useSecure ? 'https' : 'http'}://${process.env.API_URL}`;
 };
 
 export let axiosClient: AxiosInstance;
