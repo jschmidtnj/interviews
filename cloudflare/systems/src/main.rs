@@ -3,11 +3,8 @@ extern crate dotenv;
 #[macro_use]
 extern crate simple_error;
 
-use std::error::Error;
 use dotenv::dotenv;
 use std::env;
-use std::ffi::IntoStringError;
-use std::num::ParseIntError;
 use actix_web::{web, App, HttpRequest, HttpServer, Responder};
 
 async fn greet(req: HttpRequest) -> impl Responder {
@@ -29,8 +26,7 @@ async fn main() -> std::io::Result<()> {
         Err(e) => bail!(format!("couldn't get var for key {}: {}", portKey, e)),
     }
 
-    // convert string to int
-    // try using Result instead of panic!
+    // try using Result instead of bail!
     HttpServer::new(|| {
         App::new()
             .route("/", web::get().to(greet))

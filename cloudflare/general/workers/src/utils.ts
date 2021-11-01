@@ -47,7 +47,7 @@ export const generateResponse = (data: string, code: number = HTTPStatus.OK): Re
   return new Response(data, {
     status: code,
     headers: {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': `${process.env.REACT_APP_PUBLIC_URL},${process.env.REACT_APP_API_URL}`,
       'Content-Type': 'application/json'
     }
   })

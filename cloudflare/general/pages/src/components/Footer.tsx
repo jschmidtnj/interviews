@@ -20,7 +20,7 @@ const Footer: FunctionComponent = () => {
           to="/changelog"
           as={RouterLink}
           _hover={{
-            color: useColorModeValue('teal', 'teal.800'),
+            color: useColorModeValue('light_teal', 'teal.800'),
           }}
         >
           changelog
@@ -30,7 +30,7 @@ const Footer: FunctionComponent = () => {
           to={githubLink}
           as={RouterLink}
           _hover={{
-            color: useColorModeValue('teal', 'teal.800'),
+            color: useColorModeValue('light_teal', 'teal.800'),
           }}
           target="_blank"
         >
@@ -41,7 +41,7 @@ const Footer: FunctionComponent = () => {
           to={docsLink}
           as={RouterLink}
           _hover={{
-            color: useColorModeValue('teal', 'teal.800'),
+            color: useColorModeValue('light_teal', 'teal.800'),
           }}
           target="_blank"
         >

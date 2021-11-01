@@ -14,6 +14,7 @@ import {
   Container,
   Button,
   useToast,
+  Image
 } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
@@ -97,7 +98,7 @@ const Header: FunctionComponent = () => {
   const loggedIn = false;
 
   return (
-    <Box bg={useColorModeValue('teal', 'teal.800')}>
+    <Box bg={useColorModeValue('light_teal', 'teal.800')}>
       <Container maxW="container.lg">
         <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
           {/* TODO - adding this causes a findDOMNode error in the app. */}
@@ -115,9 +116,9 @@ const Header: FunctionComponent = () => {
                 )
               }
               color={useColorModeValue('gray.100', 'gray.700')}
-              bg={useColorModeValue('teal', 'teal.700')}
+              bg={useColorModeValue('light_teal', 'teal.700')}
               _hover={{
-                bg: useColorModeValue('teal', 'teal.800'),
+                bg: useColorModeValue('light_teal', 'teal.800'),
               }}
               aria-label={'Open Menu'}
               display={{ md: !isOpen ? 'none' : 'inherit' }}
@@ -135,13 +136,17 @@ const Header: FunctionComponent = () => {
                 textDecoration: 'none',
               }}
             >
-              <Heading
-                size="md"
-                textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
-                color="gray.100"
-              >
-                Post It
-              </Heading>
+              <Flex alignItems="center">
+                <Image src="/transparent_monster.png" alt="monster" maxHeight={10} mr={3} />
+                <Heading
+                  size="md"
+                  textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
+                  color="gray.100"
+                >
+                  <i>PostIt Monster</i>
+                  {/* TODO - add font to logo */}
+                </Heading>
+              </Flex>
             </Link>
             <Box display={{ base: 'none', md: 'flex' }}>
               <HStack as={'nav'} spacing={4}>

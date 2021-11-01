@@ -1,11 +1,13 @@
 import React from 'react';
 import { useEffect } from 'react';
 import {
-  Switch,
   Route,
 } from "react-router-dom";
 import { createAxiosClient } from "utils/axios";
 import Home from 'pages';
+import NotFoundPage from 'pages/404';
+import { LocalizedSwitch } from 'i18n/components/LocalizedSwitch';
+import { AppRoute } from 'i18n/const/app-routes';
 
 export const Router = () => {
   useEffect(() => {
@@ -13,13 +15,10 @@ export const Router = () => {
   }, []);
 
   return (
-    <Switch>
-      {/* TODO - see https://github.com/vlaja/multilanguage-routing-react for fixing international */}
-      {/* routing. right now going to /en/ doesn't route to / */}
-      <Route exact path="/">
-        <Home />
-      </Route>
-    </Switch>
+    <LocalizedSwitch>
+      <Route exact path={AppRoute.Home} component={Home} />
+      <Route path="*" component={NotFoundPage} />
+    </LocalizedSwitch>
   )
 }
 
