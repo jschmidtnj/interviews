@@ -8,7 +8,8 @@
     "format": "prettier --write  '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
     "lint": "eslint --max-warnings=0 src && prettier --check '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
     "test": "jest --config jestconfig.json --verbose",
-    "dev": "yarn build --watch & wrangler preview --watch"
+    "preview": "yarn build --watch & wrangler preview --watch --url https://postit.monster",
+    "dev": "yarn build --watch & wrangler dev --port 3001"
   },
   "author": "Joshua Schmidt",
   "license": "MIT",
@@ -46,6 +47,7 @@
     "class-validator": "^0.13.1",
     "http-status-codes": "^2.1.4",
     "itty-router": "^2.4.4",
+    "itty-router-extras": "^0.4.2",
     "nanoid": "^3.1.30",
     "reflect-metadata": "^0.1.13"
   }

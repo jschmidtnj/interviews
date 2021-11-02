@@ -2,6 +2,7 @@ import { Router } from 'itty-router'
 import { hello, index } from './hello'
 import { addPost, getPosts } from './posts'
 import { getUserPostReactions, react } from './reactions'
+import { handleCors } from './utils'
 
 const router = Router()
 
@@ -10,10 +11,12 @@ router.get('/hello', hello)
 
 // posts
 router.get('/posts', getPosts)
+router.options('/posts', handleCors)
 router.post('/posts', addPost)
 
 // reactions
 router.get('/reactions', getUserPostReactions)
+router.options('/reactions', handleCors)
 router.post('/reactions', react)
 
 router.all("*", () => new Response("404, not found!", { status: 404 }))

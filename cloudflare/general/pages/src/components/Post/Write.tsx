@@ -54,7 +54,7 @@ const WritePost: FunctionComponent<WritePostArgs> = (args) => {
                 })).required('required'),
               })}
               onSubmit={async (formData) => {
-                const res = await axiosClient.put<IAddPostArgs, IAddPostResponse>('/posts', {
+                const res = await axiosClient.post<IAddPostArgs, IAddPostResponse>('/posts', {
                   ...formData
                 });
                 console.log(res)

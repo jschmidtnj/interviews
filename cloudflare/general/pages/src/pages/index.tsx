@@ -13,7 +13,11 @@ const Index: FunctionComponent = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await axiosClient.get<IResponse<IGetPostsResponse>>('/posts');
+        const res = await axiosClient.get<IResponse<IGetPostsResponse>>('/posts', {
+          params: {
+            t: new Date().getTime()
+          }
+        });
         if (res.data.errors) {
           throw res.data.errors;
         }

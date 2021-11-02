@@ -3,8 +3,7 @@ import HTTPStatus from 'http-status-codes';
 import { Expose, plainToClass, classToPlain } from "class-transformer";
 import { IsDefined, IsString, IsEnum } from "class-validator";
 import { validateLoggedIn, getUserID } from "./auth";
-import { IPost, IReactions } from "./types";
-import { Request } from 'itty-router';
+import { IPost, IReactions, IttyRequest } from "./types";
 
 declare const REACTIONS: KVNamespace;
 declare const POSTS: KVNamespace;
@@ -17,14 +16,14 @@ class IUserPostReactionsArgs {
   post!: string;
 }
 
-export const getUserPostReactions = async (request: Request): Promise<Response> => {
+export const getUserPostReactions = async (request: IttyRequest): Promise<Response> => {
   validateLoggedIn(request);
   const userID = getUserID(request);
   if (!request.query) {
-    return handleError('no request query provided', [], HTTPStatus.BAD_REQUEST);
+    return handleError('no request query provided', request, [], HTTPStatus.BAD_REQUEST);
   }
   const args = plainToClass(IUserPostReactionsArgs, request.query);
-  let err = await validateObj(args);
+  let err = await validateObj(args, request);
   if (err) {
     return err;
   }
@@ -32,7 +31,7 @@ export const getUserPostReactions = async (request: Request): Promise<Response> 
   const reactionsID = getReactionsKey(userID, args.post);
   const reactionsStr = await REACTIONS.get(reactionsID)
   if (!reactionsStr) {
-    return handleError(`cannot find reactions with id ${reactionsID}`, [], HTTPStatus.NOT_FOUND);
+    return handleError(`cannot find reactions with id ${reactionsID}`, request, [], HTTPStatus.NOT_FOUND);
   }
   const reactions = plainToClass(IReactions, reactionsStr);
 
@@ -42,15 +41,15 @@ export const getUserPostReactions = async (request: Request): Promise<Response> 
     message: ''
   }
 
-  return generateResponse(JSON.stringify(classToPlain(res)));
+  return generateResponse(JSON.stringify(classToPlain(res)), request);
 }
 
 
 
 
-export const validateReaction = (reaction: string): (Response | undefined) => {
+export const validateReaction = (reaction: string, request: IttyRequest): (Response | undefined) => {
   if (reaction.length > 0) {
-    return handleError('invalid reaction provided', [], HTTPStatus.BAD_REQUEST);
+    return handleError('invalid reaction provided', request, [], HTTPStatus.BAD_REQUEST);
   }
 }
 
@@ -88,28 +87,28 @@ class IReactResponse {
   action!: ReactAction
 }
 
-export const react = async (request: Request): Promise<Response> => {
+export const react = async (request: IttyRequest): Promise<Response> => {
   validateLoggedIn(request);
   const userID = getUserID(request);
   let body: Record<string, unknown>;
   try {
     body = await request.json!();
   } catch (err) {
-    return handleError('no request body found', [], HTTPStatus.BAD_REQUEST);
+    return handleError('no request body found', request, [], HTTPStatus.BAD_REQUEST);
   }
   const args = plainToClass(IReactArgs, body);
-  let err = await validateObj(args);
+  let err = await validateObj(args, request);
   if (err) {
     return err;
   }
-  err = validateReaction(args.reaction);
+  err = validateReaction(args.reaction, request);
   if (err) {
     return err;
   }
 
   const postRes = await POSTS.get(args.post);
   if (!postRes) {
-    return handleError(`no post found with id ${args.post}`, [], HTTPStatus.NOT_FOUND);
+    return handleError(`no post found with id ${args.post}`, request, [], HTTPStatus.NOT_FOUND);
   }
   const postObj = plainToClass(IPost, postRes);
 
@@ -158,10 +157,10 @@ export const react = async (request: Request): Promise<Response> => {
     message: ''
   };
 
-  err = await validateObj(res, HTTPStatus.INTERNAL_SERVER_ERROR);
+  err = await validateObj(res, request, HTTPStatus.INTERNAL_SERVER_ERROR);
   if (err) {
     return err;
   }
 
-  return generateResponse(JSON.stringify(classToPlain(res)));
+  return generateResponse(JSON.stringify(classToPlain(res)), request);
 }

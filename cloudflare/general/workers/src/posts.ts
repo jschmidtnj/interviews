@@ -1,12 +1,11 @@
 import 'reflect-metadata';
 
 import { nanoid } from "nanoid";
-import { IsDefined, IsInt, IsString, ValidateNested } from 'class-validator';
+import { IsDefined, IsString, ValidateNested } from 'class-validator';
 import { plainToClass, Expose, classToPlain, Type } from 'class-transformer';
 import HTTPStatus from 'http-status-codes';
-import { IPost, IPostBase } from "./types";
+import { IPost, IPostBase, IttyRequest } from "./types";
 import { generateResponse, handleError, IResponse, validateObj } from "./utils";
-import { Request } from 'itty-router';
 
 declare const POSTS: KVNamespace;
 
@@ -42,7 +41,7 @@ class IGetPostsResponse {
   cursor: string | undefined;
 }
 
-export const getPosts = async (request: Request): Promise<Response> => {
+export const getPosts = async (request: IttyRequest): Promise<Response> => {
   let args: IPostsArgs;
   if (request.query) {
     args = plainToClass(IPostsArgs, request.query);
@@ -53,7 +52,7 @@ export const getPosts = async (request: Request): Promise<Response> => {
       page: undefined
     }
   }
-  let err = await validateObj(args);
+  let err = await validateObj(args, request);
   if (err) {
     return err;
   }
@@ -62,12 +61,14 @@ export const getPosts = async (request: Request): Promise<Response> => {
     limit: args.limit,
     cursor: args.cursor
   });
+
   const posts: IPostRes[] = [];
   for (const key of postKeys.keys) {
     const data = await POSTS.get(key.name);
     if (!data) {
       continue;
     }
+    // console.log(data)
     posts.push({
       ...plainToClass(IPost, data),
       id: key.name
@@ -83,12 +84,14 @@ export const getPosts = async (request: Request): Promise<Response> => {
     errors: []
   }
 
-  err = await validateObj(res, HTTPStatus.INTERNAL_SERVER_ERROR);
+  err = await validateObj(res, request, HTTPStatus.INTERNAL_SERVER_ERROR);
   if (err) {
     return err;
   }
 
-  return generateResponse(JSON.stringify(classToPlain(res)));
+  // TODO - the output of posts is messed up. this might be happening in class to plain? not 100% sure
+
+  return generateResponse(JSON.stringify(classToPlain(res)), request);
 }
 
 const newPostID = (): string => new Date().toString() + nanoid();
@@ -104,15 +107,15 @@ class IAddPostResponse {
   id!: string;
 }
 
-export const addPost = async (request: Request): Promise<Response> => {
+export const addPost = async (request: IttyRequest): Promise<Response> => {
   let body: Record<string, unknown>;
   try {
     body = await request.json!();
   } catch (err) {
-    return handleError('no request body found', [], HTTPStatus.BAD_REQUEST);
+    return handleError('no request body found', request, [], HTTPStatus.BAD_REQUEST);
   }
   const post = plainToClass(IAddPostArgs, body);
-  let err = await validateObj(post);
+  let err = await validateObj(post, request);
   if (err) {
     return err;
   }
@@ -127,10 +130,10 @@ export const addPost = async (request: Request): Promise<Response> => {
     message: undefined,
     errors: []
   }
-  err = await validateObj(res, HTTPStatus.INTERNAL_SERVER_ERROR);
+  err = await validateObj(res, request, HTTPStatus.INTERNAL_SERVER_ERROR);
   if (err) {
     return err;
   }
 
-  return generateResponse(JSON.stringify(classToPlain(res)))
+  return generateResponse(JSON.stringify(classToPlain(res)), request)
 }

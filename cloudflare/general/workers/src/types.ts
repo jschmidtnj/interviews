@@ -1,6 +1,9 @@
 import { Expose } from "class-transformer";
 import { IsDefined, IsEnum, IsString, IsInt, ValidateNested } from "class-validator";
 
+import { Request as IRequest } from 'itty-router'
+export type IttyRequest = IRequest & Request
+
 // user -> username
 // reaction -> [user, post, type]
 // reaction: user-post: type
