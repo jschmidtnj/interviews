@@ -11,6 +11,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { LocalizedRouter } from "i18n/components/LocalizedRouter";
 import * as appStrings from 'i18n/localizations/base-strings';
 import { AppLanguage } from "i18n/const/app-languages";
+import 'styles/global.scss';
 
 export const App = () => {
   const [loading, setLoading] = useState(true);

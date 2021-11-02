@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 import { IsDefined, IsInt, IsString, ValidateNested } from 'class-validator';
 import { plainToClass, Expose, classToPlain, Type } from 'class-transformer';
 import HTTPStatus from 'http-status-codes';
-import { IPost } from "./types";
+import { IPost, IPostBase } from "./types";
 import { generateResponse, handleError, IResponse, validateObj } from "./utils";
 import { Request } from 'itty-router';
 
@@ -93,6 +93,10 @@ export const getPosts = async (request: Request): Promise<Response> => {
 
 const newPostID = (): string => new Date().toString() + nanoid();
 
+class IAddPostArgs extends IPostBase {
+  // add post args
+}
+
 class IAddPostResponse {
   @IsDefined()
   @IsString()
@@ -107,7 +111,7 @@ export const addPost = async (request: Request): Promise<Response> => {
   } catch (err) {
     return handleError('no request body found', [], HTTPStatus.BAD_REQUEST);
   }
-  const post = plainToClass(IPost, body);
+  const post = plainToClass(IAddPostArgs, body);
   let err = await validateObj(post);
   if (err) {
     return err;

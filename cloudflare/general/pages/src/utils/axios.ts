@@ -13,7 +13,6 @@ Sentry.init({
 });
 
 export const getAPIURL = (): string => {
-  console.log(process.env)
   return `${useSecure ? 'https' : 'http'}://${process.env.REACT_APP_API_URL}`;
 };
 

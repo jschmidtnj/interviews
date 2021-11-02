@@ -14,11 +14,14 @@ export interface IReactionCount {
   count: number;
 }
 
-export interface IPost {
+export interface IPostBase {
   title: string;
-  username: string;
   content: string;
   media: IMedia[];
+}
+
+export interface IPost extends IPostBase {
+  username: string;
   reactions: IReactionCount[];
   upvotes: string[];
   downvotes: string[];

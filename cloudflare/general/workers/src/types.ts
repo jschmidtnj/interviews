@@ -36,16 +36,11 @@ export class IReactionCount {
   count!: number;
 }
 
-export class IPost {
+export class IPostBase {
   @IsDefined()
   @IsString()
   @Expose()
   title!: string;
-
-  @IsDefined()
-  @IsString()
-  @Expose()
-  username!: string;
 
   @IsDefined()
   @IsString()
@@ -56,6 +51,13 @@ export class IPost {
   @ValidateNested()
   @Expose()
   media!: IMedia[];
+}
+
+export class IPost extends IPostBase {
+  @IsDefined()
+  @IsString()
+  @Expose()
+  username!: string;
 
   @IsDefined()
   @ValidateNested()

@@ -43,11 +43,10 @@ export const validateObj = async <T>(obj: object, code: number = HTTPStatus.BAD_
 export const getReactionsKey = (user: string, post: string): string => `${user}:${post}`
 
 export const generateResponse = (data: string, code: number = HTTPStatus.OK): Response => {
-  // TODO - specify origin
   return new Response(data, {
     status: code,
     headers: {
-      'Access-Control-Allow-Origin': `${process.env.REACT_APP_PUBLIC_URL},${process.env.REACT_APP_API_URL}`,
+      'Access-Control-Allow-Origin': `${process.env.PUBLIC_URL},${process.env.API_URL}`,
       'Content-Type': 'application/json'
     }
   })

@@ -9,8 +9,6 @@ import {
   useColorModeValue,
   Stack,
   Icon,
-  useBreakpointValue,
-  Heading,
   Container,
   Button,
   useToast,
@@ -100,8 +98,8 @@ const Header: FunctionComponent = () => {
   return (
     <Box bg={useColorModeValue('light_teal', 'teal.800')}>
       <Container maxW="container.lg">
-        <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
-          {/* TODO - adding this causes a findDOMNode error in the app. */}
+        <Flex h="5rem" alignItems={'center'} justifyContent={'space-between'}>
+          {/* Note - adding this causes a findDOMNode error in the app. */}
           <VisibilitySensor
             onChange={setHamburgerVisible}
             partialVisibility={true}
@@ -136,17 +134,7 @@ const Header: FunctionComponent = () => {
                 textDecoration: 'none',
               }}
             >
-              <Flex alignItems="center">
-                <Image src="/transparent_monster.png" alt="monster" maxHeight={10} mr={3} />
-                <Heading
-                  size="md"
-                  textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
-                  color="gray.100"
-                >
-                  <i>PostIt Monster</i>
-                  {/* TODO - add font to logo */}
-                </Heading>
-              </Flex>
+              <Image src="/transparent_monster_long.png" alt="monster" maxHeight="5rem" />
             </Link>
             <Box display={{ base: 'none', md: 'flex' }}>
               <HStack as={'nav'} spacing={4}>

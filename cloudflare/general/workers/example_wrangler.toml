@@ -1,0 +1,13 @@
+compatibility_date = "2021-10-19"
+name = "postitmonster"
+type = "javascript"
+workers_dev = true
+
+kv_namespaces = [
+  {binding = "POSTS", preview_id = "id", id = "id"},
+]
+
+[build]
+command = "yarn install && yarn build"
+[build.upload]
+format = "service-worker"
