@@ -40,8 +40,6 @@ class IGetPostsResponse {
 }
 
 export const getPosts = async (request: IttyRequest): Promise<Response> => {
-  console.log('get posts');
-
   let args: IPostsArgs
   if (request.query) {
     args = plainToClass(IPostsArgs, request.query)
@@ -87,7 +85,6 @@ export const getPosts = async (request: IttyRequest): Promise<Response> => {
   if (err) {
     return err
   }
-  console.log(res.data?.posts.length)
 
   return generateResponse(JSON.stringify(classToPlain(res)), request)
 }

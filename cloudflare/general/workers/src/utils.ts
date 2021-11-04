@@ -12,6 +12,7 @@ import { IttyRequest } from './types'
 
 declare const PUBLIC_URL: string
 declare const API_URL: string
+declare const WORKER_URL: string
 declare const MODE: string
 
 export const inProduction = MODE === 'production'
@@ -74,16 +75,13 @@ export const validateObj = async <T>(
 export const getReactionsKey = (user: string, post: string): string =>
   `${user}:${post}`
 
-const allowedOrigins = [PUBLIC_URL, API_URL]
+const allowedOrigins = [PUBLIC_URL, API_URL, WORKER_URL]
 
 export const handleCors = (
   request: IttyRequest,
   methods: string[] = ['GET', 'POST', 'PUT', 'DELETE'],
 ) => {
-  if (
-    request.headers.get('Origin') !== null &&
-    request.headers.get('Access-Control-Request-Method') !== null
-  ) {
+  if (request.headers.get('Origin') !== null) {
     const headers: Record<string, string> = {
       'Access-Control-Allow-Methods': methods.join(', '),
       'Access-Control-Allow-Headers':
@@ -92,8 +90,8 @@ export const handleCors = (
       'Access-Control-Max-Age': '86400',
     }
 
-    const origin = inProduction ? new URL(request.url).origin : '*'
-    if (!inProduction || allowedOrigins.includes(origin)) {
+    const origin = request.headers.get('Origin')
+    if (origin !== null && allowedOrigins.includes(origin)) {
       headers['Access-Control-Allow-Origin'] = origin
     }
 
@@ -123,8 +121,8 @@ export const generateResponse = (
     'Content-Type': 'application/json'
   }
 
-  const origin = inProduction ? new URL(request.url).origin : '*'
-  if (!inProduction || allowedOrigins.includes(origin)) {
+  const origin = request.headers.get('Origin')
+  if (origin !== null && allowedOrigins.includes(origin)) {
     headers['Access-Control-Allow-Origin'] = origin
   }
 

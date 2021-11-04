@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from "react";
-import { chakra, Icon, Button, Flex, FormControl, FormErrorMessage, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure, useToast, IconButton } from "@chakra-ui/react";
+import { Button, Flex, FormControl, FormErrorMessage, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure, useToast, IconButton } from "@chakra-ui/react";
 import Editor from "./markdown/Editor";
 import { Formik, Form, Field } from 'formik';
 import type { FormikHandlers, FormikHelpers, FormikState } from 'formik';
