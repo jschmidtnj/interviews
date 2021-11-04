@@ -1,9 +1,13 @@
 export enum AppRoute {
   Home = 'routes.home',
-  Summary = 'routes.summary'
+  About = 'routes.about',
+  Changelog = 'routes.changelog',
+  Login = 'routes.login'
 }
 
-export const AppRouteTitles = new Map([
-  [AppRoute.Home, 'home.title'],
-  [AppRoute.Summary, 'summary.title']
-]);
+export const AppRouteTitles: Record<AppRoute, string> = {
+  [AppRoute.Home]: 'home.title',
+  [AppRoute.About]: 'about.title',
+  [AppRoute.Changelog]: 'changelog.title',
+  [AppRoute.Login]: 'login.title'
+};

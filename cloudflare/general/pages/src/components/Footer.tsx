@@ -2,11 +2,12 @@ import { FunctionComponent } from 'react';
 import { chakra, Link, useColorModeValue, Flex } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import React from 'react';
-
-const githubLink = 'https://github.com/jschmidtnj/interviews/tree/master/cloudflare';
-const docsLink = 'https://github.com/jschmidtnj/interviews/blob/master/cloudflare/README.md';
+import { useIntl } from 'react-intl';
+import { AppRoute, AppRouteTitles } from 'i18n/const/app-routes';
 
 const Footer: FunctionComponent = () => {
+  const { formatMessage, locale } = useIntl();
+
   return (
     <chakra.footer
       p={4}
@@ -17,36 +18,34 @@ const Footer: FunctionComponent = () => {
         <chakra.p>© {new Date().getFullYear()} Joshua</chakra.p>
         <chakra.div mx={2}>|</chakra.div>
         <Link
-          to="/changelog"
+          to={`/${locale}` + formatMessage({ id: AppRoute.Changelog })}
           as={RouterLink}
           _hover={{
             color: useColorModeValue('light_teal', 'teal.800'),
           }}
         >
-          changelog
+          {formatMessage({ id: AppRouteTitles[AppRoute.Changelog] })}
         </Link>
         <chakra.div mx={2}>|</chakra.div>
-        <Link
-          to={githubLink}
-          as={RouterLink}
+        <chakra.a
+          href={formatMessage({ id: 'links.github' })}
           _hover={{
             color: useColorModeValue('light_teal', 'teal.800'),
           }}
           target="_blank"
         >
           github
-        </Link>
+        </chakra.a>
         <chakra.div mx={2}>|</chakra.div>
-        <Link
-          to={docsLink}
-          as={RouterLink}
+        <chakra.a
+          href={formatMessage({ id: 'links.docs' })}
           _hover={{
             color: useColorModeValue('light_teal', 'teal.800'),
           }}
           target="_blank"
         >
           docs
-        </Link>
+        </chakra.a>
       </Flex>
     </chakra.footer>
   );

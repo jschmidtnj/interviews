@@ -7,10 +7,13 @@ import ConfirmDelete from "components/Post/ConfirmDelete";
 import WritePost from "components/Post/Write";
 import SEO from "components/SEO";
 import React, { FunctionComponent, useCallback, useEffect, useState } from "react";
+import { useIntl } from "react-intl";
 import { axiosClient, getAxiosError } from "utils/axios";
 import { toastDuration, waitReactUpdate } from "utils/misc";
 
 const Index: FunctionComponent = () => {
+  const { formatMessage } = useIntl();
+
   const toast = useToast();
   const [posts, setPosts] = useState<IPostRes[]>([]);
 
@@ -51,7 +54,7 @@ const Index: FunctionComponent = () => {
 
   return (
     <>
-      <SEO page="home" />
+      <SEO page={formatMessage({ id: 'home.title' })} />
       <Container py="4rem" maxW="container.md">
         {posts.length === 0 ? (
           <Flex justifyContent="center">

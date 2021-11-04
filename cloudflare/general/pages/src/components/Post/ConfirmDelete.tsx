@@ -1,4 +1,4 @@
-import { chakra, Button, ModalOverlay, useDisclosure, Modal, ModalContent, ModalHeader, ModalBody, useToast } from "@chakra-ui/react";
+import { chakra, Button, ModalOverlay, useDisclosure, Modal, ModalContent, ModalHeader, ModalBody, useToast, ModalFooter, ModalCloseButton } from "@chakra-ui/react";
 import { IDeletePostResponse } from "api/posts";
 import { IResponse } from "api/utils";
 import { AxiosError } from "axios";
@@ -48,12 +48,15 @@ const ConfirmDelete: FunctionComponent<ConfirmDeleteArgs> = (args) => {
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Delete</ModalHeader>
+        <ModalCloseButton />
         <ModalBody>
           <chakra.p>Are you sure you want to delete this post? This action cannot be undone.</chakra.p>
+        </ModalBody>
+        <ModalFooter justifyContent="center">
           <Button colorScheme="red" onClick={deletePost}>
             Delete
           </Button>
-        </ModalBody>
+        </ModalFooter>
       </ModalContent>
     </Modal>
   );

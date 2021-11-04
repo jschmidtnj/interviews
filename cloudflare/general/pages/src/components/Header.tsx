@@ -1,4 +1,4 @@
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent, useMemo, useState } from 'react';
 import {
   Box,
   Flex,
@@ -18,22 +18,13 @@ import { Link as RouterLink } from 'react-router-dom';
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 import VisibilitySensor from 'react-visibility-sensor';
 import React from 'react';
+import { AppRoute, AppRouteTitles } from 'i18n/const/app-routes';
+import { useIntl } from 'react-intl';
 
 interface HeaderLink {
   name: string;
   href: string;
 }
-
-const links: HeaderLink[] = [
-  {
-    name: 'Login',
-    href: '/login',
-  },
-  {
-    name: 'About',
-    href: '/about',
-  }
-];
 
 interface NavLinkArgs {
   linkData: HeaderLink;
@@ -94,6 +85,13 @@ const Header: FunctionComponent = () => {
 
   // TODO - get logged in from state
   const loggedIn = false;
+
+  const { formatMessage, locale } = useIntl();
+
+  const links = useMemo(() => [AppRoute.About, AppRoute.Login].map(elem => ({
+    href: `/${locale}` + formatMessage({ id: elem }),
+    name: formatMessage({ id: AppRouteTitles[elem] })
+  })) as HeaderLink[], [locale, formatMessage]);
 
   return (
     <Box bg={useColorModeValue('light_teal', 'teal.800')}>

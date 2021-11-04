@@ -1,22 +1,32 @@
 const baseStrings = {
   /** Routes */
   'routes.home': '/',
-  'routes.summary': '/summary',
+  'routes.about': '/about',
+  'routes.changelog': '/changelog',
+  'routes.login': '/login',
 
   /** Page content */
   'home.title': 'Home',
   'home.content': 'Thank you for visiting this multi-language routing example.',
 
-  'summary.title': 'Summary',
-  'summary.content': 'Read more about the article on {medium} or {devto}.',
+  'about.title': 'About',
+  'about.content': 'This is a simple social media website based on reddit / twitter, and created exclusively with cloudflare hosting. It uses cloudflare workers, key-value for storage, and pages for hosting.',
 
-  'error.title': 'Error',
-  'error.content': 'This page decided to take a vacation. Try again later.',
+  'login.title': 'Login',
+  'login.username': 'username',
+
+  'changelog.title': 'Changelog',
+  'changelog.content.1': '11/4: created initial implementation of website.',
+
+  'error.title': '404',
+  'error.message': 'Sorry we couldn\'t find this page.',
+  'error.secondary': 'But don\'t worry, you can find plenty of other things on our homepage.',
+  'error.back': 'go back',
 
   /** Links */
-  'links.medium':
-    'https://medium.com/prototyped/multi-language-routing-in-react-d7eb7a0688e9',
-  'links.dev.to': 'https://dev.to/prototyp/multi-language-routing-in-react-k9l'
+  'links.github':
+    'https://github.com/jschmidtnj/interviews/tree/master/cloudflare',
+  'links.docs': 'https://github.com/jschmidtnj/interviews/blob/master/cloudflare/README.md'
 };
 
 export type LanguageStrings = typeof baseStrings;
