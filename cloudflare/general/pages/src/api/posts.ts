@@ -20,3 +20,15 @@ export interface IAddPostArgs extends IPostBase {
 export interface IAddPostResponse {
   id: string;
 }
+
+export interface IUpdatePostArgs extends IPostBase {
+  // update post args
+}
+
+export interface IUpdatePostResponse {
+  id: string;
+}
+
+export interface IDeletePostResponse {
+  id: string;
+}

@@ -1,5 +1,11 @@
-import { Expose } from "class-transformer";
-import { IsDefined, IsEnum, IsString, IsInt, ValidateNested } from "class-validator";
+import { Expose } from 'class-transformer'
+import {
+  IsDefined,
+  IsEnum,
+  IsString,
+  IsInt,
+  ValidateNested,
+} from 'class-validator'
 
 import { Request as IRequest } from 'itty-router'
 export type IttyRequest = IRequest & Request
@@ -12,81 +18,81 @@ export type IttyRequest = IRequest & Request
 export enum MediaType {
   image = 'image',
   video = 'video',
-  link = 'link'
+  link = 'link',
 }
 
 export class IMedia {
   @IsDefined()
   @IsEnum(MediaType)
   @Expose()
-  type!: MediaType;
+  type!: MediaType
 
   @IsDefined()
   @IsString()
   @Expose()
-  src!: string;
+  src!: string
 }
 
 export class IReactionCount {
   @IsDefined()
   @IsString()
   @Expose()
-  type!: string;
+  type!: string
 
   @IsDefined()
   @IsInt()
   @Expose()
-  count!: number;
+  count!: number
 }
 
 export class IPostBase {
   @IsDefined()
   @IsString()
   @Expose()
-  title!: string;
+  title!: string
 
   @IsDefined()
   @IsString()
   @Expose()
-  content!: string;
+  content!: string
 
   @IsDefined()
   @ValidateNested()
   @Expose()
-  media!: IMedia[];
+  media!: IMedia[]
 }
 
 export class IPost extends IPostBase {
   @IsDefined()
   @IsString()
   @Expose()
-  username!: string;
+  username!: string
 
   @IsDefined()
   @ValidateNested()
   @Expose()
-  reactions!: IReactionCount[];
+  reactions!: IReactionCount[]
 
   // list of user ids
   @IsDefined()
-  @IsString({each: true})
+  @IsString({ each: true })
   @Expose()
-  upvotes!: string[];
+  upvotes!: string[]
 
   // list of user ids
   @IsDefined()
-  @IsString({each: true})
+  @IsString({ each: true })
   @Expose()
-  downvotes!: string[];
-};
+  downvotes!: string[]
+}
 
 export class IUser {
-  username!: string;
+  username!: string
 }
 
 export class IReactions {
   @IsDefined()
-  @IsString({each: true})
+  @IsString({ each: true })
   @Expose()
-  types!: string[];
+  types!: string[]
 }

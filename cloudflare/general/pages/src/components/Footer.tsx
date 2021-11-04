@@ -14,7 +14,7 @@ const Footer: FunctionComponent = () => {
       textColor={useColorModeValue('gray.300', 'gray.900')}
     >
       <Flex align="center" justifyContent="center">
-        <chakra.p>© {new Date().getFullYear()} Joshua Schmidt</chakra.p>
+        <chakra.p>© {new Date().getFullYear()} Joshua</chakra.p>
         <chakra.div mx={2}>|</chakra.div>
         <Link
           to="/changelog"
