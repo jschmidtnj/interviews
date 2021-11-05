@@ -31,6 +31,7 @@ export const LocalizedRouter: React.FC<Props> = ({
          * If language is not in route path, redirect to language root
          */
         const { pathname } = location;
+        // TODO - check if this is necessary (I don't think it is)
         if (pathname !== '/service-worker.js' && !pathname.includes(`/${lang}/`)) {
           return <Redirect to={`/${lang}/`} />;
         }
