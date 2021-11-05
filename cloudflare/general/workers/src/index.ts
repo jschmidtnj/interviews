@@ -4,6 +4,7 @@ import { hello, index } from './hello'
 import { addPost, getPosts, updatePost, deletePost, getPost } from './posts'
 import { getUserPostReactions, react } from './reactions'
 import { handleCors } from './utils'
+import { login } from './users'
 
 const router = Router()
 
@@ -19,6 +20,10 @@ router.options('/posts/:id', handleCors)
 router.get('/posts/:id', getPost)
 router.put('/posts/:id', updatePost)
 router.delete('/posts/:id', deletePost)
+
+// users
+router.options('/login', handleCors)
+router.post('/login', login)
 
 // reactions
 router.get('/reactions', getUserPostReactions)

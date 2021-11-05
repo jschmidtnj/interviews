@@ -17,6 +17,7 @@ const baseStrings = {
 
   'changelog.title': 'Changelog',
   'changelog.content.1': '11/4: created initial implementation of website.',
+  'changelog.content.2': '11/5: made website a pwa',
 
   'error.title': '404',
   'error.message': 'Sorry we couldn\'t find this page.',

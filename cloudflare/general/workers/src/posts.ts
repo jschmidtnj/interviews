@@ -4,6 +4,7 @@ import { plainToClass, Expose, classToPlain, Type } from 'class-transformer'
 import HTTPStatus from 'http-status-codes'
 import { IPost, IPostBase, IttyRequest } from './types'
 import { generateResponse, handleError, IResponse, validateObj } from './utils'
+import { getUserID } from './auth'
 
 declare const POSTS: KVNamespace
 
@@ -114,14 +115,28 @@ export const addPost = async (request: IttyRequest): Promise<Response> => {
       HTTPStatus.BAD_REQUEST,
     )
   }
-  const post = plainToClass(IAddPostArgs, body)
-  let err = await validateObj(post, request)
+  const postArgs = plainToClass(IAddPostArgs, body)
+  let err = await validateObj(postArgs, request)
   if (err) {
     return err
   }
 
+  const userID = getUserID(request)
   const postID = newPostID()
-  await POSTS.put(postID, JSON.stringify(classToPlain(post)))
+  const post: IPost = {
+    ...postArgs,
+    downvotes: [],
+    upvotes: [],
+    reactions: [],
+    username: userID
+  }
+  const postObj = plainToClass(IPost, post)
+  err = await validateObj(postObj, request)
+  if (err) {
+    return err
+  }
+
+  await POSTS.put(postID, JSON.stringify(classToPlain(postObj)))
 
   const res: IResponse<IAddPostResponse> = {
     data: {
