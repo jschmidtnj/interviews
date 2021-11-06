@@ -3,12 +3,8 @@
 package shared
 
 import (
+	"encoding/json"
 	"syscall/js"
-
-	"time"
-
-	"github.com/golang-jwt/jwt"
-	"github.com/jschmidtnj/interviews/cloudflare/go/wasm/templates"
 )
 
 type MessageRes struct {
@@ -17,28 +13,20 @@ type MessageRes struct {
 
 func Index(_this js.Value, args []js.Value) interface{} {
 	callback := args[0]
-	res := templates.MessageRes{
-		Message: "Auth API",
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": "asdf123",
-		"iat": time.Now().Unix(),
-		"nbf": time.Now().Unix(),
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
-	})
-	tokenString, err := token.SignedString("secret")
+	res := MessageRes{Message: "Auth API"}
+	res_bytes, err := json.Marshal(res)
 	if err != nil {
-		callback.Invoke(err.Error(), nil)
-		return nil
+		return callback.Invoke(err.Error(), nil).String()
 	}
-	println(tokenString)
-	return callback.Invoke(nil, res.JSON()).String()
+	return callback.Invoke(nil, string(res_bytes)).String()
 }
 
 func Hello(_this js.Value, args []js.Value) interface{} {
 	callback := args[0]
-	res := templates.MessageRes{
-		Message: "Hello World",
+	res := MessageRes{Message: "hello world"}
+	res_bytes, err := json.Marshal(res)
+	if err != nil {
+		return callback.Invoke(err.Error(), nil).String()
 	}
-	return callback.Invoke(nil, res.JSON()).String()
+	return callback.Invoke(nil, string(res_bytes)).String()
 }

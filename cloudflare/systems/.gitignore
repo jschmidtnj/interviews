@@ -4,9 +4,6 @@
 # ignore wasm_exec
 src/wasm_exec.js
 
-# and keys
-.cf-keys
-
 dist
 node_modules
 transpiled
