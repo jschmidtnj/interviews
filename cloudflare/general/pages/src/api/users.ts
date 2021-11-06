@@ -3,5 +3,5 @@ export interface ILoginArgs {
 }
 
 export interface ILoginResponse {
-  id: string;
+  token: string;
 }

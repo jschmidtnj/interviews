@@ -1,0 +1,27 @@
+compatibility_date = "2021-10-19"
+name = "postitmonster-auth"
+type = "javascript"
+workers_dev = true
+
+kv_namespaces = [
+  {binding = "USERS", preview_id = "id", id = "id"},
+]
+
+wasm_modules = {WASM = "./dist/go.wasm"}
+
+[build]
+command = "yarn install && yarn build"
+[build.upload]
+format = "service-worker"
+
+[vars]
+API_URL = "https://api.postit.monster"
+MODE = "production"
+PUBLIC_URL = "https://postit.monster"
+WORKER_URL = "https://postitmonster.worker-api.workers.dev"
+
+[env.development.vars]
+API_URL = "http://localhost:3001"
+MODE = "dev"
+PUBLIC_URL = "http://localhost:3000"
+WORKER_URL = "https://postitmonster.worker-api.workers.dev"

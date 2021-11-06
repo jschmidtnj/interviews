@@ -9,12 +9,12 @@ module.exports = {
   devtool: 'cheap-module-source-map',
   mode: 'development',
   resolve: {
-    extensions: ['.ts', '.tsx', '.js'],
+    extensions: ['.ts', '.js'],
   },
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
+        test: /\.ts$/,
         loader: 'ts-loader',
         options: {
           // transpileOnly is useful to skip typescript checks occasionally:

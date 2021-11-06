@@ -17,7 +17,7 @@ const Login: FunctionComponent = () => {
   return (
     <>
       <SEO page={formatMessage({ id: 'login.title' })} />
-      <Container py="4rem" maxW="container.md">
+      <Container py="4rem" maxW="container.sm">
         <Heading as="h1" size="md" mb="2rem" color="dark_green">
           {formatMessage({ id: 'login.title' })}
         </Heading>
@@ -50,7 +50,7 @@ const Login: FunctionComponent = () => {
                 if (!res.data || !res.data.data) {
                   throw new Error('no data found');
                 }
-                console.log(`user ${res.data.data.id} logged in`);
+                console.log(`user ${formData.username} logged in`);
                 setStatus({ success: true });
                 setSubmitting(false);
               } catch (err) {

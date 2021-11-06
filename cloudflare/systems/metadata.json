@@ -1,0 +1,35 @@
+{
+  "body_part": "script",
+  "bindings": [
+    {
+      "type": "wasm_module",
+      "name": "WASM",
+      "part": "wasm"
+    },
+    {
+      "type": "secret_text",
+      "name": "PRIVATE_KEY",
+      "text": "PRIVATE_KEY_PLACEHOLDER"
+    },
+    {
+      "type": "plain_text",
+      "name": "API_URL",
+      "text": "https://api.postit.monster"
+    },
+    {
+      "type": "plain_text",
+      "name": "MODE",
+      "text": "production"
+    },
+    {
+      "type": "plain_text",
+      "name": "PUBLIC_URL",
+      "text": "https://postit.monster"
+    },
+    {
+      "type": "plain_text",
+      "name": "WORKER_URL",
+      "text": "https://postitmonster.worker-api.workers.dev"
+    }
+  ]
+}

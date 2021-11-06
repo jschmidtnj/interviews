@@ -17,7 +17,7 @@ class ILoginResponse {
   @IsDefined()
   @IsString()
   @Expose()
-  id!: string
+  token!: string
 }
 
 export const login = async (request: IttyRequest): Promise<Response> => {
@@ -39,13 +39,11 @@ export const login = async (request: IttyRequest): Promise<Response> => {
     return err
   }
 
-  let response: ILoginResponse;
   const currUserStr = await USERS.get(loginArgs.username);
+  let userID: string;
   if (currUserStr !== null) {
     const currUserObj = plainToClass(IUser, JSON.parse(currUserStr));
-    response = {
-      id: currUserObj.username,
-    }
+    userID = currUserObj.username;
   } else {
     const user: IUser = {
       ...loginArgs
@@ -57,13 +55,13 @@ export const login = async (request: IttyRequest): Promise<Response> => {
     }
 
     await USERS.put(loginArgs.username, JSON.stringify(classToPlain(userObj)))
-    response = {
-      id: loginArgs.username
-    }
+    userID = loginArgs.username;
   }
 
   const res: IResponse<ILoginResponse> = {
-    data: response,
+    data: {
+      token: 'TODO - get token'
+    },
     message: undefined,
     errors: [],
   }

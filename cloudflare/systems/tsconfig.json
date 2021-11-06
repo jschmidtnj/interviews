@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "module": "commonjs",
+    "target": "esnext",
+    "lib": ["esnext", "DOM"],
+    "alwaysStrict": true,
+    "strict": true,
+    "preserveConstEnums": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "types": [
+      "@cloudflare/workers-types",
+      "@types/jest",
+      "@types/service-worker-mock",
+      "@types/node"
+    ],
+    "typeRoots": [
+      "node_modules/@types",
+      "src/typings"
+    ],
+    "experimentalDecorators": true,
+    "allowJs": true
+  },
+  "include": ["src", "test", "wasm_exec.d.ts"],
+  "exclude": ["node_modules", "dist"]
+}
