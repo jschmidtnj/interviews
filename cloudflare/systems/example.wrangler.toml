@@ -19,9 +19,27 @@ API_URL = "https://api.postit.monster"
 MODE = "production"
 PUBLIC_URL = "https://postit.monster"
 WORKER_URL = "https://postitmonster.worker-api.workers.dev"
+PRIVATE_KEY = """
+-----BEGIN RSA PRIVATE KEY-----
+-----END RSA PRIVATE KEY-----
+"""
+PUBLIC_KEY = """
+-----BEGIN PUBLIC KEY-----
+-----END PUBLIC KEY-----
+"""
+PRIVATE_KEY_PASSWORD = "key"
 
 [env.development.vars]
 API_URL = "http://localhost:3001"
 MODE = "dev"
 PUBLIC_URL = "http://localhost:3000"
 WORKER_URL = "https://postitmonster.worker-api.workers.dev"
+PRIVATE_KEY = """
+-----BEGIN RSA PRIVATE KEY-----
+-----END RSA PRIVATE KEY-----
+"""
+PUBLIC_KEY = """
+-----BEGIN PUBLIC KEY-----
+-----END PUBLIC KEY-----
+"""
+PRIVATE_KEY_PASSWORD = "key"

@@ -4,12 +4,12 @@
   "description": "cloudflare interview systems assignment",
   "main": "dist/worker.js",
   "scripts": {
-    "build": "webpack",
+    "build": "webpack --mode production",
     "format": "prettier --write  '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
     "lint": "eslint --max-warnings=0 src && prettier --check '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
     "test": "jest --config jestconfig.json --verbose",
-    "preview": "concurrently \"yarn build --watch\" \"wrangler preview --watch --env development --url https://postit.monster\"",
-    "dev": "concurrently \"yarn build --watch\" \"wrangler dev --env development --port 3002\"",
+    "preview": "concurrently \"webpack --watch\" \"wrangler preview --watch --env development --url https://postit.monster\"",
+    "dev": "concurrently \"webpack --watch\" \"wrangler dev --env development --port 3002\"",
     "deploy": "wrangler publish",
     "deploy:dev": "wrangler publish --env development",
     "logs": "wrangler tail"
