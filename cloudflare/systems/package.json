@@ -10,7 +10,8 @@
     "test": "jest --config jestconfig.json --verbose",
     "preview": "concurrently \"yarn build --watch\" \"wrangler preview --watch --env development --url https://postit.monster\"",
     "dev": "concurrently \"yarn build --watch\" \"wrangler dev --env development --port 3002\"",
-    "deploy": "yarn install && yarn build && make upload",
+    "deploy": "wrangler publish",
+    "deploy:dev": "wrangler publish --env development",
     "logs": "wrangler tail"
   },
   "keywords": [
