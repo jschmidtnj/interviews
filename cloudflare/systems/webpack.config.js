@@ -1,6 +1,7 @@
 const path = require('path')
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 const WebpackShellPlugin = require('webpack-shell-plugin-next')
+// uncomment to analyze bundle usage
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 module.exports = {
   entry: './src/index.ts',
@@ -10,12 +11,13 @@ module.exports = {
   },
   devtool: 'cheap-module-source-map',
   mode: 'development',
-  // target: 'node',
-  // externalsPresets: { node: true },
   resolve: {
     extensions: ['.ts', '.js'],
     fallback: {
-      "fs": false
+      "fs": false,
+      "os": false,
+      "crypto": false,
+      "util": false
     },
   },
   plugins: [
@@ -34,7 +36,7 @@ module.exports = {
         ]
       },
     }),
-    new NodePolyfillPlugin()
+    // new BundleAnalyzerPlugin()
   ],
   module: {
     rules: [

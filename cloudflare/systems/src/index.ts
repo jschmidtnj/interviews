@@ -81,7 +81,6 @@ const getRouter = (): Router<unknown> => {
     }
     const data: ISignRes = JSON.parse(res);
     return new Response(data.publicKey, {
-      status: HTTPStatus.OK,
       headers: {
         'Content-Type': 'text/plain',
         'Set-Cookie': `token=${data.jwt}; Path=*; HttpOnly; Secure=${inProduction}; SameSite=${inProduction ? 'Strict' : 'Lax'}`,
