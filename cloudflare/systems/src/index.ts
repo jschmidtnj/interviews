@@ -10,21 +10,16 @@ global.performance = {
 
 import './wasm_exec'
 import { promisify } from 'util'
+import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler'
 
 declare const WASM: string;
-
-const webAssemblyMiddleware = async () => {
-  const go = new Go();
-  const obj = await WebAssembly.instantiate(WASM, go.importObject);
-  go.run(obj);
-};
 
 const getRouter = (): Router<unknown> => {
   const router = Router()
 
   // test
   router.options('/', handleCors)
-  router.get('/', webAssemblyMiddleware, async (): Promise<Response> => {
+  router.get('/', async (): Promise<Response> => {
     try {
       return new Response(await promisify(index)(), {
         headers: {
@@ -43,7 +38,7 @@ const getRouter = (): Router<unknown> => {
     }
   })
   router.options('/hello', handleCors)
-  router.get('/hello', webAssemblyMiddleware, async (): Promise<Response> => {
+  router.get('/hello', async (): Promise<Response> => {
     try {
       return new Response(await promisify(hello)(), {
         headers: {
@@ -64,7 +59,7 @@ const getRouter = (): Router<unknown> => {
 
   // auth
   router.options('/auth/:username', handleCors)
-  router.get('/auth/:username', webAssemblyMiddleware, async (req): Promise<Response> => {
+  router.get('/auth/:username', async (req): Promise<Response> => {
     if (!req.params) {
       return new Response('no username provided', { status: HTTPStatus.BAD_REQUEST })
     }
@@ -88,7 +83,7 @@ const getRouter = (): Router<unknown> => {
     });
   });
   router.options('/verify', handleCors)
-  router.get('/verify', webAssemblyMiddleware, withCookies, async (req: IttyRequest & {
+  router.get('/verify', withCookies, async (req: IttyRequest & {
     cookies: Record<string, string>
   }): Promise<Response> => {
     if (!req.cookies.token) {
@@ -110,8 +105,7 @@ const getRouter = (): Router<unknown> => {
         },
       })
     }
-    const data: IVerifyRes = JSON.parse(res);
-    return new Response(data.message, {
+    return new Response(res, {
       status: HTTPStatus.OK,
       headers: {
         'Content-Type': 'text/plain'
@@ -121,7 +115,7 @@ const getRouter = (): Router<unknown> => {
 
   // misc
   router.options('/README.txt', handleCors)
-  router.get('/README.txt', webAssemblyMiddleware, async () => {
+  router.get('/README.txt', async () => {
     try {
       return new Response(await promisify(getREADME)(), {
         headers: {
@@ -138,7 +132,7 @@ const getRouter = (): Router<unknown> => {
     }
   })
   router.options('/stats', handleCors)
-  router.get('/stats', webAssemblyMiddleware, async () => {
+  router.get('/stats', async () => {
     try {
       return new Response(await promisify(getStats)(), {
         headers: {
@@ -163,7 +157,23 @@ const getRouter = (): Router<unknown> => {
 }
 
 if (require.main === module) {
-  addEventListener('fetch', (e: FetchEvent) => {
-    e.respondWith(getRouter().handle(e.request))
+  addEventListener('fetch', async (e: FetchEvent) => {
+    e.respondWith((async () => {
+      console.log('do stuff')
+      const res = await getAssetFromKV(e, {
+        mapRequestToAsset: req => {
+          console.log(req.url)
+          const url = new URL(req.url)
+          console.log(url.pathname)
+          url.pathname = '/dist.wasm';
+          return mapRequestToAsset(new Request(url.href, req))
+        }
+      });
+      console.log('test')
+      const go = new Go();
+      const obj = await WebAssembly.instantiate(await res.arrayBuffer(), go.importObject);
+      go.run(obj);
+      return getRouter().handle(e.request)
+    })());
   })
 }

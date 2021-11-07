@@ -1,6 +1,6 @@
 declare class Go {
   importObject: WebAssembly.Imports;
-  run(instance: WebAssembly.Instance): void;
+  run(instance: WebAssembly.WebAssemblyInstantiatedSource): void;
 }
 
 type callback<TResult> = (err: string, result: TResult) => void;
@@ -18,10 +18,6 @@ declare interface ISignRes {
  */
 declare function sign(username: string, call: callback<string>): void;
 
-declare interface IVerifyRes {
-  message: string;
-  code: number;
-}
 /**
  * verify jwt, return username in plain text
  */
