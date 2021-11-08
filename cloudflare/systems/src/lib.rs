@@ -1,8 +1,9 @@
 mod hello;
 mod jwt;
 mod keys;
+mod utils;
 
-use serde::{ Deserialize, Serialize };
+use serde::{Deserialize, Serialize};
 use worker::*;
 
 #[event(fetch)]
@@ -21,6 +22,7 @@ pub async fn main(req: Request, env: worker::Env) -> Result<Response> {
     router
         .get("/", hello::index)
         .get("/hello", hello::hello)
+        .get("/auth/:username", jwt::sign)
         .get_async("/account/:id", |_req, ctx| async move {
             if let Some(id) = ctx.param("id") {
                 let accounts = ctx.kv("ACCOUNTS")?;
