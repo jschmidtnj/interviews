@@ -16,9 +16,11 @@ worker = "0.0.7"
 jsonwebtoken = "7"
 chrono = "0.4"
 http = "0.2.5"
-openssl = "0.10.38"
+getrandom = { version = "0.2", features = ["js"] }
+nanoid = "0.4.0"
 cookie = "0.15"
 serde = { version = "1.0.130", features = ["derive"] }
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 serde_json = "1.0.67"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by

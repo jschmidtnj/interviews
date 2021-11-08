@@ -1,21 +1,21 @@
-use serde::{ Deserialize, Serialize };
+use serde::{Serialize, Deserialize};
 use worker::*;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Serialize, Deserialize)]
 struct MessageRes {
     message: String,
 }
 
 pub fn index(_req: Request, _ctx: RouteContext<()>) -> Result<Response> {
     let message = MessageRes {
-        message: String::from("Auth API"),
+        message: "Auth API".to_string(),
     };
-    return Response::from_json(&message)
+    return Response::from_json(&message);
 }
 
 pub fn hello(_req: Request, _ctx: RouteContext<()>) -> Result<Response> {
     let message = MessageRes {
-        message: String::from("hello world"),
+        message: "hello world".to_string(),
     };
-    return Response::from_json(&message)
+    return Response::from_json(&message);
 }
