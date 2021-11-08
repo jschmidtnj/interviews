@@ -1,12 +1,9 @@
-mod hello;
-mod jwt;
-mod keys;
-
 use serde::{ Deserialize, Serialize };
 use worker::*;
 
 #[event(fetch)]
-pub async fn main(req: Request, env: worker::Env) -> Result<Response> {
+pub async fn main(req: Request, env: Env) -> Result<Response> {
+
     // Create an instance of the Router, which can use paramaters (/user/:name) or wildcard values
     // (/file/*pathname). Alternatively, use `Router::with_data(D)` and pass in arbitrary data for
     // routes to access and share using the `ctx.data()` method.
@@ -19,8 +16,6 @@ pub async fn main(req: Request, env: worker::Env) -> Result<Response> {
         // ...
     }
     router
-        .get("/", hello::index)
-        .get("/hello", hello::hello)
         .get_async("/account/:id", |_req, ctx| async move {
             if let Some(id) = ctx.param("id") {
                 let accounts = ctx.kv("ACCOUNTS")?;
