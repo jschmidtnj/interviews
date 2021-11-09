@@ -1,9 +1,9 @@
-mod hello;
 mod jwt;
 mod keys;
-mod utils;
-mod mode;
-mod misc;
+mod shared;
+pub mod misc;
+pub mod mode;
+mod cookies;
 
 use worker::*;
 
@@ -12,8 +12,12 @@ pub async fn main(req: Request, env: worker::Env) -> Result<Response> {
     let router = Router::new();
 
     router
-        .get("/", hello::index)
-        .get("/hello", hello::hello)
+        .get("/", |_req, _ctx| {
+            Response::from_json(&shared::hello::index())
+        })
+        .get("/hello", |_req, _ctx| {
+            Response::from_json(&shared::hello::hello())
+        })
         .get_async("/auth/:username", |req, ctx| async move {
             jwt::sign(req, ctx).await
         })

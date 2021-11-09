@@ -1,9 +1,9 @@
 use http::StatusCode;
 use worker::*;
 use serde::{Serialize};
-use crate::utils::{Visit, AUTH_KV, VISIT_PREFIX, NUM_ENCODES_KEY, NUM_DECODES_KEY, SUM_ENCODES_KEY, SUM_DECODES_KEY};
+use crate::shared::utils::{Visit, AUTH_KV, VISIT_PREFIX, NUM_ENCODES_KEY, NUM_DECODES_KEY, SUM_ENCODES_KEY, SUM_DECODES_KEY};
 
-const README: &str = include_str!("README.txt");
+const README: &str = include_str!("../../README.txt");
 
 pub fn readme(_req: Request, _ctx: RouteContext<()>) -> Result<Response> {
     return Response::ok(README.to_string());

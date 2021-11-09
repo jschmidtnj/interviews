@@ -1,5 +1,5 @@
 # config
-wrangler.toml
+../../wrangler.toml
 
 # misc
 wasm-pack.log

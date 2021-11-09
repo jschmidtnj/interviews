@@ -1,0 +1,20 @@
+[package]
+name = "auth-server"
+version = "0.1.0"
+authors = ["Joshua <jschmidtnj@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+jwt-simple = { git = "https://github.com/jschmidtnj/rust-jwt-simple" }
+cfg-if = "0.1.2"
+#cloudflare = "0.8.7"
+cloudflare = { git = "https://github.com/jschmidtnj/cloudflare-rs" }
+chrono = "0.4"
+http = "0.2.5"
+dotenv = "0.15.0"
+actix-web = "3"
+nanoid = "0.4.0"
+cookie = "0.15"
+serde = { version = "1.0.130", features = ["derive"] }
+serde_json = "1.0.67"
+instant = "0.1"

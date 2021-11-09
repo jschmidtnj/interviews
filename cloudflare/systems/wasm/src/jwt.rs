@@ -9,8 +9,9 @@ use jwt_simple::common::VerificationOptions;
 use jwt_simple::prelude::{Claims, Duration, RS256KeyPair, RS256PublicKey, RSAPublicKeyLike};
 use worker::*;
 use nanoid::nanoid;
+use crate::cookies::get_cookies;
 use crate::keys::get_keys;
-use crate::utils::{AUTH_KV, get_cookies, NUM_DECODES_KEY, NUM_ENCODES_KEY, SUM_DECODES_KEY, SUM_ENCODES_KEY, Visit, VISIT_PREFIX};
+use crate::shared::utils::{AUDIENCE, ISSUER, AUTH_COOKIE, AUTH_KV, NUM_DECODES_KEY, NUM_ENCODES_KEY, SUM_DECODES_KEY, SUM_ENCODES_KEY, Visit, VISIT_PREFIX};
 use crate::mode::{is_production};
 
 
@@ -18,10 +19,6 @@ use crate::mode::{is_production};
 struct CustomClaims {
     // put custom claims here
 }
-
-const ISSUER: &str = "PostIt Monster";
-const AUDIENCE: &str = "post-it-users";
-const AUTH_COOKIE: &str = "token";
 
 pub async fn sign(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
     let username = match ctx.param("username") {
