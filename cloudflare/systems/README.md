@@ -4,6 +4,8 @@
 
 Hosted at https://api.postit.monster with cloudflare workers. See https://postit.monster for the soon to be completed website.
 
+Server version: https://github.com/jschmidtnj/interviews/releases/tag/auth_server
+
 | request             | description                                                  |
 |---------------------|--------------------------------------------------------------|
 | GET /               | index page, JSON message object                              |

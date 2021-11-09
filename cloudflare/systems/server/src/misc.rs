@@ -4,7 +4,7 @@ use actix_web::{get, HttpResponse};
 use cloudflare::endpoints::workerskv::list_namespace_keys::{ListNamespaceKeys, ListNamespaceKeysParams};
 use cloudflare::endpoints::workerskv::read::Read;
 use cloudflare::framework::apiclient::ApiClient;
-use crate::shared::utils::{Visit, VISIT_PREFIX, NUM_ENCODES_KEY, NUM_DECODES_KEY, SUM_ENCODES_KEY, SUM_DECODES_KEY};
+use crate::shared::utils::{Visit, VISIT_PREFIX, NUM_ENCODES_KEY, NUM_DECODES_KEY, SUM_ENCODES_KEY, SUM_DECODES_KEY, MIN_LIST_LIMIT};
 
 const README: &str = include_str!("../../README.md");
 
@@ -42,7 +42,7 @@ pub async fn stats() -> HttpResponse {
         account_identifier: account.as_str(),
         params: ListNamespaceKeysParams {
             prefix: Some(VISIT_PREFIX.to_string()),
-            limit: Some(if MAX_VISITS < 10 { 10 } else { MAX_VISITS as u16 }),
+            limit: Some(if MAX_VISITS >= MIN_LIST_LIMIT { MAX_VISITS } else { MIN_LIST_LIMIT } as u16),
             ..Default::default()
         },
         namespace_identifier: auth_namespace.as_str(),

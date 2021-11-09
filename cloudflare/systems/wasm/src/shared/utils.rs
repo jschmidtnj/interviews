@@ -18,7 +18,10 @@ pub const AUTH_COOKIE: &str = "token";
 
 #[allow(dead_code)]
 pub const AUTH_KV: &str = "AUTH";
+
+pub const MIN_LIST_LIMIT: u64 = 10;
 pub const VISIT_PREFIX: &str = "visit_";
+pub const USER_PREFIX: &str = "user_";
 pub const NUM_ENCODES_KEY: &str = "num_encodes";
 pub const SUM_ENCODES_KEY: &str = "sum_encodes";
 pub const NUM_DECODES_KEY: &str = "num_decodes";

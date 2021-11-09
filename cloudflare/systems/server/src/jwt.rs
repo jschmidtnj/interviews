@@ -15,7 +15,7 @@ use nanoid::nanoid;
 use crate::mode::{is_production};
 use crate::auth::{get_account, get_auth_namespace, get_client};
 use crate::keys::get_keys;
-use crate::shared::utils::{AUDIENCE, AUTH_COOKIE, ISSUER, NUM_DECODES_KEY, NUM_ENCODES_KEY, SUM_DECODES_KEY, SUM_ENCODES_KEY, Visit, VISIT_PREFIX};
+use crate::shared::utils::{AUDIENCE, AUTH_COOKIE, ISSUER, NUM_DECODES_KEY, NUM_ENCODES_KEY, SUM_DECODES_KEY, SUM_ENCODES_KEY, USER_PREFIX, Visit, VISIT_PREFIX};
 
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -25,13 +25,10 @@ struct CustomClaims {
 
 #[get("/auth/{username}")]
 pub async fn sign(web::Path(username): web::Path<String>) -> HttpResponse {
-    let instant = Instant::now();
-    let now = Utc::now();
-    let custom = CustomClaims {};
-    let mut audiences = HashSet::new();
-    audiences.insert(AUDIENCE.to_string());
-    let claims = Claims::with_custom_claims(custom, Duration::from_secs(86400))
-        .with_issuer(ISSUER.to_string()).with_audiences(audiences).with_subject(username.to_owned());
+    let client = match get_client() {
+        Ok(i) => i,
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
+    };
 
     let account = match get_account() {
         Ok(i) => i,
@@ -41,6 +38,23 @@ pub async fn sign(web::Path(username): web::Path<String>) -> HttpResponse {
         Ok(i) => i,
         Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
     };
+
+    match client.request_text(&Read {
+        key: (USER_PREFIX.to_owned() + username.as_str()).as_str(),
+        account_identifier: account.as_str(),
+        namespace_identifier: auth_namespace.as_str(),
+    }) {
+        Ok(_) => (),
+        Err(_err) => return HttpResponse::Unauthorized().body(format!("username \"{}\" already registered", username)),
+    };
+
+    let instant = Instant::now();
+    let now = Utc::now();
+    let custom = CustomClaims {};
+    let mut audiences = HashSet::new();
+    audiences.insert(AUDIENCE.to_string());
+    let claims = Claims::with_custom_claims(custom, Duration::from_secs(86400))
+        .with_issuer(ISSUER.to_string()).with_audiences(audiences).with_subject(username.to_owned());
 
     let keys = match get_keys() {
         Ok(i) => i,
@@ -58,11 +72,6 @@ pub async fn sign(web::Path(username): web::Path<String>) -> HttpResponse {
     };
 
     let production = match is_production() {
-        Ok(i) => i,
-        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
-    };
-
-    let client = match get_client() {
         Ok(i) => i,
         Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
     };

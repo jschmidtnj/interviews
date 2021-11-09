@@ -11,7 +11,7 @@ use worker::*;
 use nanoid::nanoid;
 use crate::cookies::get_cookies;
 use crate::keys::get_keys;
-use crate::shared::utils::{AUDIENCE, ISSUER, AUTH_COOKIE, AUTH_KV, NUM_DECODES_KEY, NUM_ENCODES_KEY, SUM_DECODES_KEY, SUM_ENCODES_KEY, Visit, VISIT_PREFIX};
+use crate::shared::utils::{AUDIENCE, ISSUER, AUTH_COOKIE, AUTH_KV, NUM_DECODES_KEY, NUM_ENCODES_KEY, SUM_DECODES_KEY, SUM_ENCODES_KEY, Visit, VISIT_PREFIX, USER_PREFIX};
 use crate::mode::{is_production};
 
 
@@ -24,6 +24,19 @@ pub async fn sign(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
     let username = match ctx.param("username") {
         Some(i) => i.as_str().to_string(),
         None => return Response::error("cannot get exp", StatusCode::BAD_REQUEST.as_u16()),
+    };
+
+    let auth = match ctx.kv(AUTH_KV) {
+        Ok(i) => i,
+        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+    };
+
+    match auth.get((USER_PREFIX.to_owned() + username.as_str()).as_str()).await {
+        Ok(i) => match i {
+            Some(_) => return Response::error(format!("username \"{}\" already registered", username), StatusCode::UNAUTHORIZED.as_u16()),
+            None => (),
+        },
+        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     };
 
     let instant = Instant::now();
@@ -50,11 +63,6 @@ pub async fn sign(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
     };
 
     let production = match is_production(&ctx) {
-        Ok(i) => i,
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
-    };
-
-    let auth = match ctx.kv(AUTH_KV) {
         Ok(i) => i,
         Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     };
@@ -98,6 +106,14 @@ pub async fn sign(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
         user: username.to_owned(),
     };
     match auth.put((VISIT_PREFIX.to_owned() + nanoid!().as_str()).as_str(), serde_json::to_string(&visit).unwrap()) {
+        Ok(i) => match i.execute().await {
+            Ok(_) => (),
+            Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+        },
+        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+    };
+
+    match auth.put((USER_PREFIX.to_owned() + username.as_str()).as_str(), serde_json::to_string(&visit).unwrap()) {
         Ok(i) => match i.execute().await {
             Ok(_) => (),
             Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),

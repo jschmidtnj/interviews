@@ -1,7 +1,7 @@
 use http::StatusCode;
 use worker::*;
 use serde::{Serialize};
-use crate::shared::utils::{Visit, AUTH_KV, VISIT_PREFIX, NUM_ENCODES_KEY, NUM_DECODES_KEY, SUM_ENCODES_KEY, SUM_DECODES_KEY};
+use crate::shared::utils::{Visit, AUTH_KV, VISIT_PREFIX, NUM_ENCODES_KEY, NUM_DECODES_KEY, SUM_ENCODES_KEY, SUM_DECODES_KEY, MIN_LIST_LIMIT};
 
 const README: &str = include_str!("../../README.md");
 
@@ -24,7 +24,8 @@ pub async fn stats(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
         Ok(i) => i,
         Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     };
-    let keys = match auth.list().prefix(String::from(VISIT_PREFIX)).limit(MAX_VISITS).execute().await {
+    let keys = match auth.list().prefix(VISIT_PREFIX.to_string())
+        .limit(if MAX_VISITS >= MIN_LIST_LIMIT { MAX_VISITS } else { MIN_LIST_LIMIT }).execute().await {
         Ok(i) => i,
         Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     }.keys;
