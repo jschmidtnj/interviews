@@ -108,7 +108,7 @@ pub async fn sign(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
     Response::ok(keys.public_key).map(|res| {
         let mut headers = Headers::new();
         let cookie = Cookie::build(AUTH_COOKIE, token)
-            .path("*").secure(production).same_site(if production { SameSite::Strict } else { SameSite::Lax }).finish();
+            .path("/").secure(production).same_site(if production { SameSite::Strict } else { SameSite::Lax }).finish();
         headers.set("Set-Cookie", cookie.to_string().as_str()).unwrap();
         res.with_headers(headers)
     })
@@ -157,7 +157,7 @@ pub async fn verify(req: Request, ctx: RouteContext<()>) -> Result<Response> {
         Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     };
 
-    let num_encode = match auth.get(NUM_DECODES_KEY).await {
+    let num_decode = match auth.get(NUM_DECODES_KEY).await {
         Ok(i) => match i {
             Some(i) => i.as_string().parse::<u64>().unwrap(),
             None => 0,
@@ -165,7 +165,7 @@ pub async fn verify(req: Request, ctx: RouteContext<()>) -> Result<Response> {
         Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     };
 
-    match auth.put(NUM_DECODES_KEY, num_encode + 1) {
+    match auth.put(NUM_DECODES_KEY, num_decode + 1) {
         Ok(i) => match i.execute().await {
             Ok(_) => (),
             Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
@@ -173,7 +173,7 @@ pub async fn verify(req: Request, ctx: RouteContext<()>) -> Result<Response> {
         Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     };
 
-    let sum_encode = match auth.get(SUM_DECODES_KEY).await {
+    let sum_decode = match auth.get(SUM_DECODES_KEY).await {
         Ok(i) => match i {
             Some(i) => i.as_string().parse::<u64>().unwrap(),
             None => 0,
@@ -183,7 +183,7 @@ pub async fn verify(req: Request, ctx: RouteContext<()>) -> Result<Response> {
 
     let decoding_time = Instant::now() - instant;
 
-    match auth.put(SUM_DECODES_KEY, sum_encode + (decoding_time.as_millis() as u64)) {
+    match auth.put(SUM_DECODES_KEY, sum_decode + (decoding_time.as_millis() as u64)) {
         Ok(i) => match i.execute().await {
             Ok(_) => (),
             Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),

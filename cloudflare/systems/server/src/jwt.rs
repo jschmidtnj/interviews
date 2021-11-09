@@ -1,16 +1,21 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use chrono::{Utc};
-use cookie::{Cookie, SameSite};
-use http::StatusCode;
+use actix_web::{get, HttpResponse, web, HttpRequest, HttpMessage};
+use actix_web::cookie::SameSite;
+use actix_web::http::Cookie;
+use cloudflare::endpoints::workerskv::read::Read;
+use cloudflare::endpoints::workerskv::write_bulk::{KeyValuePair, WriteBulk};
+use cloudflare::framework::apiclient::ApiClient;
 use instant::Instant;
 use jwt_simple::algorithms::RSAKeyPairLike;
 use jwt_simple::common::VerificationOptions;
 use jwt_simple::prelude::{Claims, Duration, RS256KeyPair, RS256PublicKey, RSAPublicKeyLike};
 use nanoid::nanoid;
-use crate::keys::get_keys;
-use crate::shared::utils::{AUTH_KV, get_cookies, NUM_DECODES_KEY, NUM_ENCODES_KEY, SUM_DECODES_KEY, SUM_ENCODES_KEY, Visit, VISIT_PREFIX};
 use crate::mode::{is_production};
+use crate::auth::{get_account, get_auth_namespace, get_client};
+use crate::keys::get_keys;
+use crate::shared::utils::{AUDIENCE, AUTH_COOKIE, ISSUER, NUM_DECODES_KEY, NUM_ENCODES_KEY, SUM_DECODES_KEY, SUM_ENCODES_KEY, Visit, VISIT_PREFIX};
 
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -18,16 +23,8 @@ struct CustomClaims {
     // put custom claims here
 }
 
-const ISSUER: &str = "PostIt Monster";
-const AUDIENCE: &str = "post-it-users";
-const AUTH_COOKIE: &str = "token";
-
-pub async fn sign(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
-    let username = match ctx.param("username") {
-        Some(i) => i.as_str().to_string(),
-        None => return Response::error("cannot get exp", StatusCode::BAD_REQUEST.as_u16()),
-    };
-
+#[get("/auth/{username}")]
+pub async fn sign(web::Path(username): web::Path<String>) -> HttpResponse {
     let instant = Instant::now();
     let now = Utc::now();
     let custom = CustomClaims {};
@@ -36,107 +33,138 @@ pub async fn sign(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
     let claims = Claims::with_custom_claims(custom, Duration::from_secs(86400))
         .with_issuer(ISSUER.to_string()).with_audiences(audiences).with_subject(username.to_owned());
 
-    let keys = match get_keys(&ctx) {
+    let account = match get_account() {
         Ok(i) => i,
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
+    };
+    let auth_namespace = match get_auth_namespace() {
+        Ok(i) => i,
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
+    };
+
+    let keys = match get_keys() {
+        Ok(i) => i,
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
     };
 
     let key_pair = match RS256KeyPair::from_pem(keys.key_pair.as_str()) {
         Ok(i) => i,
-        Err(err) => return Response::error(err.to_string() + keys.key_pair.as_str(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
     };
 
     let token = match key_pair.sign(claims) {
         Ok(i) => i,
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
     };
 
-    let production = match is_production(&ctx) {
+    let production = match is_production() {
         Ok(i) => i,
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
     };
 
-    let auth = match ctx.kv(AUTH_KV) {
+    let client = match get_client() {
         Ok(i) => i,
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
     };
 
-    let num_encode = match auth.get(NUM_ENCODES_KEY).await {
-        Ok(i) => match i {
-            Some(i) => i.as_string().parse::<u64>().unwrap(),
-            None => 0,
-        },
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+    let num_encode = match client.request_text(&Read {
+        key: NUM_ENCODES_KEY,
+        account_identifier: account.as_str(),
+        namespace_identifier: auth_namespace.as_str(),
+    }) {
+        Ok(i) => i.result.parse::<u64>().unwrap(),
+        Err(_err) => 0,
     };
 
-    match auth.put(NUM_ENCODES_KEY, num_encode + 1) {
-        Ok(i) => match i.execute().await {
-            Ok(_) => (),
-            Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
-        },
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
-    };
-
-    let sum_encode = match auth.get(SUM_ENCODES_KEY).await {
-        Ok(i) => match i {
-            Some(i) => i.as_string().parse::<u64>().unwrap(),
-            None => 0,
-        },
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+    let sum_encode = match client.request_text(&Read {
+        key: SUM_ENCODES_KEY,
+        account_identifier: account.as_str(),
+        namespace_identifier: auth_namespace.as_str(),
+    }) {
+        Ok(i) => i.result.parse::<u64>().unwrap(),
+        Err(_err) => 0,
     };
 
     let encoding_time = Instant::now() - instant;
-
-    match auth.put(SUM_ENCODES_KEY, sum_encode + (encoding_time.as_millis() as u64)) {
-        Ok(i) => match i.execute().await {
-            Ok(_) => (),
-            Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
-        },
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
-    };
 
     let visit = Visit {
         time: now.timestamp() as usize,
         user: username.to_owned(),
     };
-    match auth.put((VISIT_PREFIX.to_owned() + nanoid!().as_str()).as_str(), serde_json::to_string(&visit).unwrap()) {
-        Ok(i) => match i.execute().await {
-            Ok(_) => (),
-            Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
-        },
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+
+    match client.request(&WriteBulk {
+        account_identifier: account.as_str(),
+        namespace_identifier: auth_namespace.as_str(),
+        bulk_key_value_pairs: vec![KeyValuePair {
+            key: NUM_ENCODES_KEY.to_string(),
+            value: (num_encode + 1).to_string(),
+            base64: None,
+            expiration: None,
+            expiration_ttl: None,
+        }, KeyValuePair {
+            key: SUM_ENCODES_KEY.to_string(),
+            value: (sum_encode + (encoding_time.as_millis() as u64)).to_string(),
+            base64: None,
+            expiration: None,
+            expiration_ttl: None,
+        }, KeyValuePair {
+            key: (VISIT_PREFIX.to_owned() + nanoid!().as_str()),
+            value: serde_json::to_string(&visit).unwrap(),
+            base64: None,
+            expiration: None,
+            expiration_ttl: None,
+        }],
+    }) {
+        Ok(_) => (),
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
     };
 
-    Response::ok(keys.public_key).map(|res| {
-        let mut headers = Headers::new();
-        let cookie = Cookie::build(AUTH_COOKIE, token)
-            .path("*").secure(production).same_site(if production { SameSite::Strict } else { SameSite::Lax }).finish();
-        headers.set("Set-Cookie", cookie.to_string().as_str()).unwrap();
-        res.with_headers(headers)
-    })
+    HttpResponse::Ok().cookie(
+        Cookie::build(AUTH_COOKIE, token)
+            .path("/")
+            .secure(production).same_site(
+            if production { SameSite::Strict } else { SameSite::Lax })
+            .finish(),
+    ).body(keys.public_key)
 }
 
-pub async fn verify(req: Request, ctx: RouteContext<()>) -> Result<Response> {
-    let cookies = match get_cookies(req) {
+#[get("/verify")]
+pub async fn verify(req: HttpRequest) -> HttpResponse {
+    let cookies = match req.cookies() {
         Ok(i) => i,
-        Err(err) => return Response::error(err, StatusCode::UNAUTHORIZED.as_u16()),
+        Err(err) => return HttpResponse::Unauthorized().body(err.to_string()),
     };
-
-    let token = match cookies.get(AUTH_COOKIE) {
+    println!("{}", cookies.len());
+    let token = match req.cookie(AUTH_COOKIE) {
         Some(i) => i.value().to_string(),
-        None => return Response::error("no auth token found", StatusCode::UNAUTHORIZED.as_u16()),
+        None => return HttpResponse::Unauthorized().body("cannot find auth token"),
     };
 
     let instant = Instant::now();
     let now = Utc::now();
 
-    let keys = match get_keys(&ctx) {
+    let account = match get_account() {
         Ok(i) => i,
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
     };
+    let auth_namespace = match get_auth_namespace() {
+        Ok(i) => i,
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
+    };
+
+    let client = match get_client() {
+        Ok(i) => i,
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
+    };
+
+    let keys = match get_keys() {
+        Ok(i) => i,
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
+    };
+
     let public_key = match RS256PublicKey::from_pem(keys.public_key.as_str()) {
         Ok(i) => i,
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
     };
 
     let mut verification_options = VerificationOptions::default();
@@ -149,61 +177,62 @@ pub async fn verify(req: Request, ctx: RouteContext<()>) -> Result<Response> {
 
     let token_data = match public_key.verify_token::<CustomClaims>(&token, Some(verification_options)) {
         Ok(i) => i,
-        Err(err) => return Response::error(err.to_string(), StatusCode::UNAUTHORIZED.as_u16()),
+        Err(err) => return HttpResponse::Unauthorized().body(err.to_string()),
     };
 
     let username = token_data.subject.unwrap();
 
-    let auth = match ctx.kv(AUTH_KV) {
-        Ok(i) => i,
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+    let num_decode = match client.request_text(&Read {
+        key: NUM_DECODES_KEY,
+        account_identifier: account.as_str(),
+        namespace_identifier: auth_namespace.as_str(),
+    }) {
+        Ok(i) => i.result.parse::<u64>().unwrap(),
+        Err(_err) => 0,
     };
 
-    let num_encode = match auth.get(NUM_DECODES_KEY).await {
-        Ok(i) => match i {
-            Some(i) => i.as_string().parse::<u64>().unwrap(),
-            None => 0,
-        },
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
-    };
-
-    match auth.put(NUM_DECODES_KEY, num_encode + 1) {
-        Ok(i) => match i.execute().await {
-            Ok(_) => (),
-            Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
-        },
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
-    };
-
-    let sum_encode = match auth.get(SUM_DECODES_KEY).await {
-        Ok(i) => match i {
-            Some(i) => i.as_string().parse::<u64>().unwrap(),
-            None => 0,
-        },
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+    let sum_decode = match client.request_text(&Read {
+        key: SUM_DECODES_KEY,
+        account_identifier: account.as_str(),
+        namespace_identifier: auth_namespace.as_str(),
+    }) {
+        Ok(i) => i.result.parse::<u64>().unwrap(),
+        Err(_err) => 0,
     };
 
     let decoding_time = Instant::now() - instant;
-
-    match auth.put(SUM_DECODES_KEY, sum_encode + (decoding_time.as_millis() as u64)) {
-        Ok(i) => match i.execute().await {
-            Ok(_) => (),
-            Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
-        },
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
-    };
 
     let visit = Visit {
         time: now.timestamp() as usize,
         user: username.to_owned(),
     };
-    match auth.put((String::from(VISIT_PREFIX) + nanoid!().as_str()).as_str(), serde_json::to_string(&visit).unwrap()) {
-        Ok(i) => match i.execute().await {
-            Ok(_) => (),
-            Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
-        },
-        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+
+    match client.request(&WriteBulk {
+        account_identifier: account.as_str(),
+        namespace_identifier: auth_namespace.as_str(),
+        bulk_key_value_pairs: vec![KeyValuePair {
+            key: NUM_DECODES_KEY.to_string(),
+            value: (num_decode + 1).to_string(),
+            base64: None,
+            expiration: None,
+            expiration_ttl: None,
+        }, KeyValuePair {
+            key: SUM_DECODES_KEY.to_string(),
+            value: (sum_decode + (decoding_time.as_millis() as u64)).to_string(),
+            base64: None,
+            expiration: None,
+            expiration_ttl: None,
+        }, KeyValuePair {
+            key: (VISIT_PREFIX.to_owned() + nanoid!().as_str()),
+            value: serde_json::to_string(&visit).unwrap(),
+            base64: None,
+            expiration: None,
+            expiration_ttl: None,
+        }],
+    }) {
+        Ok(_) => (),
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
     };
 
-    Response::ok(username)
+    HttpResponse::Ok().body(username)
 }

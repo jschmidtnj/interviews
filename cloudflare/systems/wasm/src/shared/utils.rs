@@ -16,6 +16,7 @@ pub const ISSUER: &str = "PostIt Monster";
 pub const AUDIENCE: &str = "post-it-users";
 pub const AUTH_COOKIE: &str = "token";
 
+#[allow(dead_code)]
 pub const AUTH_KV: &str = "AUTH";
 pub const VISIT_PREFIX: &str = "visit_";
 pub const NUM_ENCODES_KEY: &str = "num_encodes";

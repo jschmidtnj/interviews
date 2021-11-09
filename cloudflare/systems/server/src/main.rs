@@ -1,20 +1,25 @@
 mod shared;
 mod auth;
 mod misc;
+mod jwt;
+mod keys;
+mod mode;
 
 use actix_web::{get, App, HttpServer, HttpResponse};
 use dotenv::dotenv;
 use std::env;
+use crate::jwt::{sign, verify};
+use crate::misc::{readme, stats};
 
 const DEFAULT_PORT: i32 = 8080;
 
 #[get("/")]
-async fn index() -> HttpResponse {
+fn index() -> HttpResponse {
     HttpResponse::Ok().json(shared::hello::index())
 }
 
 #[get("/hello")]
-async fn hello() -> HttpResponse {
+fn hello() -> HttpResponse {
     HttpResponse::Ok().json(shared::hello::hello())
 }
 
@@ -33,7 +38,8 @@ async fn main() -> std::io::Result<()> {
     let address = format!("127.0.0.1:{}", port);
     println!("running at {} 🚀", address);
 
-    HttpServer::new(|| App::new().service(index))
+    HttpServer::new(|| App::new().service(index).service(hello)
+        .service(readme).service(stats).service(sign).service(verify))
         .bind(address)?
         .run()
         .await
