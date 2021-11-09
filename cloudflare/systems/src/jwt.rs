@@ -122,6 +122,7 @@ pub async fn verify(req: Request, ctx: RouteContext<()>) -> Result<Response> {
         Ok(i) => i,
         Err(err) => return Response::error(err, StatusCode::UNAUTHORIZED.as_u16()),
     };
+
     let token = match cookies.get(AUTH_COOKIE) {
         Some(i) => i.value().to_string(),
         None => return Response::error("no auth token found", StatusCode::UNAUTHORIZED.as_u16()),

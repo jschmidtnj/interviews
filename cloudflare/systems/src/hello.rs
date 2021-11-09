@@ -1,4 +1,3 @@
-use std::time::Instant;
 use serde::{Serialize, Deserialize};
 use worker::*;
 
@@ -8,7 +7,6 @@ struct MessageRes {
 }
 
 pub fn index(_req: Request, _ctx: RouteContext<()>) -> Result<Response> {
-    Instant::now();
     let message = MessageRes {
         message: "Auth API".to_string(),
     };
