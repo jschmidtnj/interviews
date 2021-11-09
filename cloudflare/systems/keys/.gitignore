@@ -4,3 +4,6 @@
 
 # except for this file
 !.gitignore
+
+# and gen keys file
+!gen_keys.sh

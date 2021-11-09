@@ -4,10 +4,8 @@ type = "javascript"
 workers_dev = true
 
 kv_namespaces = [
-  {binding = "USERS", preview_id = "id", id = "id"},
+    { binding = "AUTH", preview_id = "id", id = "id" },
 ]
-
-wasm_modules = {WASM = "./dist/go.wasm"}
 
 [build]
 command = "yarn install && yarn build"
@@ -19,27 +17,9 @@ API_URL = "https://api.postit.monster"
 MODE = "production"
 PUBLIC_URL = "https://postit.monster"
 WORKER_URL = "https://postitmonster.worker-api.workers.dev"
-PRIVATE_KEY = """
------BEGIN RSA PRIVATE KEY-----
------END RSA PRIVATE KEY-----
-"""
-PUBLIC_KEY = """
------BEGIN PUBLIC KEY-----
------END PUBLIC KEY-----
-"""
-PRIVATE_KEY_PASSWORD = "key"
 
 [env.development.vars]
 API_URL = "http://localhost:3001"
 MODE = "dev"
 PUBLIC_URL = "http://localhost:3000"
 WORKER_URL = "https://postitmonster.worker-api.workers.dev"
-PRIVATE_KEY = """
------BEGIN RSA PRIVATE KEY-----
------END RSA PRIVATE KEY-----
-"""
-PUBLIC_KEY = """
------BEGIN PUBLIC KEY-----
------END PUBLIC KEY-----
-"""
-PRIVATE_KEY_PASSWORD = "key"

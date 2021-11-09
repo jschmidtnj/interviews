@@ -1,7 +1,5 @@
 use cfg_if::cfg_if;
 use cookie::{Cookie, CookieJar};
-use http::StatusCode;
-use worker::Response;
 use serde::{Serialize, Deserialize};
 
 cfg_if! {
@@ -10,8 +8,8 @@ cfg_if! {
         extern crate console_error_panic_hook;
         pub use self::console_error_panic_hook::set_once as set_panic_hook;
     } else {
-        #[inline]
-        pub fn set_panic_hook() {}
+        // #[inline]
+        // pub fn set_panic_hook() {}
     }
 }
 
@@ -32,13 +30,14 @@ pub fn get_cookies(req: worker::Request) -> Result<CookieJar, String> {
     let cookies = match req.headers().get("Cookie") {
         Ok(cookies) => {
             let mut jar = cookie::CookieJar::new();
-            cookies.unwrap().split(';').map(|curr| -> Cookie {
+
+            for cookie in cookies.unwrap().split(';').map(|curr| -> Cookie {
                 let trimmed = curr.to_string().trim().to_string();
                 let split = trimmed.split('=').collect::<Vec<&str>>();
                 return Cookie::new(split[0].to_string(), split[1].to_string());
-            }).map(|cookie| -> () {
-                jar.add(cookie)
-            });
+            }) {
+                jar.add(cookie);
+            }
             jar
         }
         Err(err) => return Err(err.to_string()),

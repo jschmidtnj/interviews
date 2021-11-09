@@ -1,7 +1,6 @@
 use http::StatusCode;
 use worker::*;
 use serde::{Serialize};
-use worker::kv::KvStore;
 use crate::utils::{Visit, AUTH_KV, VISIT_PREFIX, NUM_ENCODES_KEY, NUM_DECODES_KEY, SUM_ENCODES_KEY, SUM_DECODES_KEY};
 
 const README: &str = include_str!("README.txt");
@@ -12,8 +11,8 @@ pub fn readme(_req: Request, _ctx: RouteContext<()>) -> Result<Response> {
 
 #[derive(Serialize)]
 struct StatsRes {
-    average_encode: f64,
-    average_decode: f64,
+    average_encode: String,
+    average_decode: String,
     num_visits: u64,
     visits: Vec<Visit>,
 }
@@ -42,24 +41,36 @@ pub async fn stats(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
         visits.push(visit);
     }
     let num_encode = match auth.get(NUM_ENCODES_KEY).await {
-        Ok(i) => i.unwrap().as_string().parse::<u64>().unwrap(),
+        Ok(i) => match i {
+            Some(i) => i.as_string().parse::<u64>().unwrap(),
+            None => 0,
+        },
         Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     };
     let num_decode = match auth.get(NUM_DECODES_KEY).await {
-        Ok(i) => i.unwrap().as_string().parse::<u64>().unwrap(),
+        Ok(i) => match i {
+            Some(i) => i.as_string().parse::<u64>().unwrap(),
+            None => 0,
+        },
         Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     };
     let sum_encode = match auth.get(SUM_ENCODES_KEY).await {
-        Ok(i) => i.unwrap().as_string().parse::<u64>().unwrap(),
+        Ok(i) => match i {
+            Some(i) => i.as_string().parse::<u64>().unwrap(),
+            None => 0,
+        },
         Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     };
     let sum_decode = match auth.get(SUM_DECODES_KEY).await {
-        Ok(i) => i.unwrap().as_string().parse::<u64>().unwrap(),
+        Ok(i) => match i {
+            Some(i) => i.as_string().parse::<u64>().unwrap(),
+            None => 0,
+        },
         Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     };
     let res = StatsRes {
-        average_encode: sum_encode as f64 / num_encode as f64,
-        average_decode: sum_decode as f64 / num_decode as f64,
+        average_encode: format!("{:.2}", sum_encode as f64 / if num_encode == 0 { 1 } else { num_encode } as f64),
+        average_decode: format!("{:.2}", sum_decode as f64 / if num_decode == 0 { 1 } else { num_decode } as f64),
         num_visits: num_encode + num_decode,
         visits,
     };

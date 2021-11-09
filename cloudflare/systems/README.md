@@ -13,18 +13,12 @@ wrangler dev
 wrangler publish
 ```
 
-install openssl
-
-from https://stackoverflow.com/a/49578644 and https://askubuntu.com/a/742712
+get it to compile
 
 ```bash
-wget http://www.openssl.org/source/openssl-1.0.1g.tar.gz
-wget http://www.openssl.org/source/openssl-1.0.1g.tar.gz.md5
-md5sum openssl-1.0.1g.tar.gz
-cat openssl-1.0.1g.tar.gz.md5
-tar -xvzf openssl-1.0.1g.tar.gz
-cd openssl-1.0.1g
-./config --prefix=/usr/local/openssl --openssldir=/usr/local/openssl
-make
-sudo make install_sw
+vim ~/.cargo/registry/src/github.com-1ecc6299db9ec823/der-0.4.4/src/encoder.rs
+# remove the if statement, replace with Ok(())
+
+cat keys/public.pem | wrangler secret put PUBLIC_KEY
+cat keys/key_pair.pem | wrangler secret put KEY_PAIR
 ```
