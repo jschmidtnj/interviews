@@ -44,8 +44,8 @@ pub async fn sign(web::Path(username): web::Path<String>) -> HttpResponse {
         account_identifier: account.as_str(),
         namespace_identifier: auth_namespace.as_str(),
     }) {
-        Ok(_) => (),
-        Err(_err) => return HttpResponse::Unauthorized().body(format!("username \"{}\" already registered", username)),
+        Ok(_) => return HttpResponse::Unauthorized().body(format!("username \"{}\" already registered", username)),
+        Err(_) => (),
     };
 
     let instant = Instant::now();
@@ -131,6 +131,7 @@ pub async fn sign(web::Path(username): web::Path<String>) -> HttpResponse {
     HttpResponse::Ok().cookie(
         Cookie::build(AUTH_COOKIE, token)
             .path("/")
+            .http_only(true)
             .secure(production).same_site(
             if production { SameSite::Strict } else { SameSite::Lax })
             .finish(),

@@ -9,7 +9,7 @@ use actix_web::{get, App, HttpServer, HttpResponse};
 use dotenv::dotenv;
 use std::env;
 use crate::jwt::{sign, verify};
-use crate::misc::{readme, stats};
+use crate::misc::{readme, readme_txt, stats};
 
 const DEFAULT_PORT: i32 = 8080;
 
@@ -38,7 +38,7 @@ async fn main() -> std::io::Result<()> {
     let address = format!("127.0.0.1:{}", port);
     println!("running at {} 🚀", address);
 
-    HttpServer::new(|| App::new().service(index).service(hello)
+    HttpServer::new(|| App::new().service(hello).service(readme_txt)
         .service(readme).service(stats).service(sign).service(verify))
         .bind(address)?
         .run()

@@ -13,6 +13,11 @@ pub fn readme() -> HttpResponse {
     HttpResponse::Ok().body(README.to_string())
 }
 
+#[get("/README.txt")]
+pub fn readme_txt() -> HttpResponse {
+    HttpResponse::Ok().body(README.to_string())
+}
+
 #[derive(Serialize)]
 struct StatsRes {
     average_encode: String,

@@ -23,6 +23,7 @@ pub async fn main(req: Request, env: worker::Env) -> Result<Response> {
         })
         .get_async("/verify", jwt::verify)
         .get("/README.md", misc::readme)
+        .get("/README.txt", misc::readme)
         .get_async("/stats", misc::stats)
         .run(req, env).await
 }

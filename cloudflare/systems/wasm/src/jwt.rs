@@ -123,7 +123,7 @@ pub async fn sign(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
 
     Response::ok(keys.public_key).map(|res| {
         let mut headers = Headers::new();
-        let cookie = Cookie::build(AUTH_COOKIE, token)
+        let cookie = Cookie::build(AUTH_COOKIE, token).http_only(true)
             .path("/").secure(production).same_site(if production { SameSite::Strict } else { SameSite::Lax }).finish();
         headers.set("Set-Cookie", cookie.to_string().as_str()).unwrap();
         res.with_headers(headers)
