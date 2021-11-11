@@ -58,7 +58,6 @@ export const login = async (request: IttyRequest): Promise<Response> => {
     return handleError('cannot find auth cookie', request, [], HTTPStatus.NOT_FOUND)
   }
   authCookie.secure = useSecure
-  // authCookie.sameSite = useSecure ? 'strict': 'lax'
 
   headers.set('set-cookie', serialize(authCookie.name, authCookie.value, authCookie as CookieSerializeOptions))
 

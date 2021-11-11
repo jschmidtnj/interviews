@@ -54,8 +54,7 @@ export const logout = async (request: IttyRequestCookies): Promise<Response> => 
   const cookies = serialize(authCookieName, '', {
     path: '/',
     secure: useSecure,
-    httpOnly: true,
-    sameSite: useSecure ? 'strict' : 'lax'
+    httpOnly: true
   });
   const headers = new Headers()
   headers.set('Set-Cookie', cookies)
