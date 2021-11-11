@@ -17,9 +17,12 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 import VisibilitySensor from 'react-visibility-sensor';
+import { useLocalStorageValue } from '@react-hookz/web';
 import React from 'react';
 import { AppRoute, AppRouteTitles } from 'i18n/const/app-routes';
 import { useIntl } from 'react-intl';
+import { usernameKey } from 'utils/auth';
+import { axiosClient } from 'utils/axios';
 
 interface HeaderLink {
   name: string;
@@ -51,6 +54,9 @@ const NavLink: FunctionComponent<NavLinkArgs> = (args) => (
 const Logout: FunctionComponent = () => {
   const toast = useToast();
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_username, _setUsername, removeUsername] = useLocalStorageValue<string>(usernameKey);
+
   return (
     <Flex justifyContent="start">
       <Button
@@ -64,9 +70,12 @@ const Logout: FunctionComponent = () => {
         fontWeight="normal"
         bg="transparent"
         color="gray.100"
-        onClick={(evt) => {
+        onClick={async (evt) => {
           evt.preventDefault();
-          // TODO - logout!
+          await axiosClient.put('/logout', undefined, {
+            withCredentials: true
+          });
+          removeUsername();
           toast({
             status: 'success',
             description: 'logged out',
@@ -83,15 +92,20 @@ const Header: FunctionComponent = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [hamburgerIsVisible, setHamburgerVisible] = useState(false);
 
-  // TODO - get logged in from state
-  const loggedIn = false;
+  const [username] = useLocalStorageValue<string>(usernameKey);
 
   const { formatMessage, locale } = useIntl();
 
-  const links = useMemo(() => [AppRoute.About, AppRoute.Login].map(elem => ({
-    href: `/${locale}` + formatMessage({ id: elem }),
-    name: formatMessage({ id: AppRouteTitles[elem] })
-  })) as HeaderLink[], [locale, formatMessage]);
+  const links = useMemo(() => {
+    const links: AppRoute[] = [AppRoute.About];
+    if (username === null) {
+      links.push(AppRoute.Login);
+    }
+    return links.map(elem => ({
+      href: `/${locale}` + formatMessage({ id: elem }),
+      name: formatMessage({ id: AppRouteTitles[elem] })
+    }));
+  }, [username, locale, formatMessage]);
 
   return (
     <Box bg={useColorModeValue('light_teal', 'teal.800')}>
@@ -139,7 +153,7 @@ const Header: FunctionComponent = () => {
                 {links.map((link) => (
                   <NavLink key={`nav-link-${link.href}`} linkData={link} />
                 ))}
-                {loggedIn ? <Logout /> : null}
+                {username ? <Logout /> : null}
               </HStack>
             </Box>
           </HStack>
@@ -152,7 +166,7 @@ const Header: FunctionComponent = () => {
               {links.map((link) => (
                 <NavLink key={`nav-link-${link.href}`} linkData={link} />
               ))}
-              {loggedIn ? <Logout /> : null}
+              {username ? <Logout /> : null}
             </Stack>
           </Box>
         ) : null}

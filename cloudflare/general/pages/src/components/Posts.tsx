@@ -8,10 +8,13 @@ import WritePost from "components/Post/Write";
 import React, { FunctionComponent, useCallback, useEffect, useState } from "react";
 import { axiosClient, getAxiosError } from "utils/axios";
 import { toastDuration, waitReactUpdate } from "utils/misc";
+import { useLocalStorageValue } from '@react-hookz/web';
+import { usernameKey } from "utils/auth";
 
 const Posts: FunctionComponent = () => {
   const toast = useToast();
   const [posts, setPosts] = useState<IPostRes[]>([]);
+  const [username] = useLocalStorageValue<string>(usernameKey);
 
   const updatePosts = useCallback(async () => {
     try {
@@ -59,7 +62,7 @@ const Posts: FunctionComponent = () => {
       ) : (
         <VStack spacing="4rem">
           {posts.map((post, i) => (
-            <Post key={`post-${i}`} {...post} onUpdate={async () => {
+            <Post key={`post-${i}`} currentUser={username as string} {...post} onUpdate={async () => {
               setUpdateID(post.id);
               await waitReactUpdate();
               toggleUpdate();

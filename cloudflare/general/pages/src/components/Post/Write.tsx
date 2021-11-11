@@ -10,7 +10,9 @@ import { FaPlus } from 'react-icons/fa';
 import { axiosClient, getAxiosError } from "utils/axios";
 import type { AxiosError } from "axios";
 import { IResponse } from "api/utils";
+import { useLocalStorageValue } from '@react-hookz/web';
 import { toastDuration } from "utils/misc";
+import { usernameKey } from "utils/auth";
 
 interface WritePostArgs {
   updateToggle: boolean;
@@ -30,6 +32,7 @@ const WritePost: FunctionComponent<WritePostArgs> = (args) => {
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
+  const [username] = useLocalStorageValue<string>(usernameKey);
 
   const [currentPost, setCurrentPost] = useState<IPostRes | undefined>(undefined);
 
@@ -101,14 +104,16 @@ const WritePost: FunctionComponent<WritePostArgs> = (args) => {
                   if (args.updateID === undefined || currentPost === undefined) {
                     const res = await axiosClient.post<IResponse<IAddPostResponse>>('/posts', {
                       ...formData
-                    } as IAddPostArgs);
+                    } as IAddPostArgs, {
+                      withCredentials: true
+                    });
                     if (!res.data || !res.data.data) {
                       throw new Error('no data found');
                     }
                     console.log(`added post with id ${res.data.data.id}`);
                     args.onClose({
                       ...formData,
-                      username: 'TODO - get username',
+                      username: username as string,
                       downvotes: [],
                       upvotes: [],
                       id: res.data.data.id,
@@ -117,7 +122,9 @@ const WritePost: FunctionComponent<WritePostArgs> = (args) => {
                   } else {
                     const res = await axiosClient.put<IResponse<IUpdatePostResponse>>(`/posts/${args.updateID}`, {
                       ...formData
-                    } as IUpdatePostArgs);
+                    } as IUpdatePostArgs, {
+                      withCredentials: true
+                    });
                     if (!res.data || !res.data.data) {
                       throw new Error('no data found');
                     }

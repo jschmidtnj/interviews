@@ -6,6 +6,7 @@ import { BsPencil, BsTrash } from "react-icons/bs";
 import { IPostRes } from "api/posts";
 
 interface PostArgs {
+  currentUser: string;
   onDelete: () => Promise<void>;
   onUpdate: () => Promise<void>;
 };
@@ -20,18 +21,20 @@ const Post: FunctionComponent<IPostRes & PostArgs> = (args) => {
       w="full"
       bg={useColorModeValue('white', 'gray.700')}
     >
-      <Flex justifyContent="end">
-        <Button bgColor="white" _hover={{
-          color: 'teal.400'
-        }} variant="ghost" bg="transparent" color="teal" zIndex={10} pos="absolute" mr="2.5rem" p="0" onClick={args.onUpdate}>
-          <Icon width="1rem" height="1rem" as={BsPencil} />
-        </Button>
-        <Button bgColor="white" _hover={{
-          color: 'teal.400'
-        }} variant="ghost" bg="transparent" color="teal" zIndex={10} pos="absolute" p="0" onClick={args.onDelete}>
-          <Icon width="1rem" height="1rem" as={BsTrash} />
-        </Button>
-      </Flex>
+      {args.currentUser !== args.username ? null : (
+        <Flex justifyContent="end">
+          <Button bgColor="white" _hover={{
+            color: 'teal.400'
+          }} variant="ghost" bg="transparent" color="teal" zIndex={10} pos="absolute" mr="2.5rem" p="0" onClick={args.onUpdate}>
+            <Icon width="1rem" height="1rem" as={BsPencil} />
+          </Button>
+          <Button bgColor="white" _hover={{
+            color: 'teal.400'
+          }} variant="ghost" bg="transparent" color="teal" zIndex={10} pos="absolute" p="0" onClick={args.onDelete}>
+            <Icon width="1rem" height="1rem" as={BsTrash} />
+          </Button>
+        </Flex>
+      )}
       <Grid>
         <Heading as="h3" size="md">
           {args.title}

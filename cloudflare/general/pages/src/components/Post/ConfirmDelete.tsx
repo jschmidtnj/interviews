@@ -24,7 +24,9 @@ const ConfirmDelete: FunctionComponent<ConfirmDeleteArgs> = (args) => {
 
   const deletePost = useCallback(async () => {
     try {
-      const res = await axiosClient.delete<IResponse<IDeletePostResponse>>(`/posts/${args.postID}`);
+      const res = await axiosClient.delete<IResponse<IDeletePostResponse>>(`/posts/${args.postID}`, {
+        withCredentials: true
+      });
       if (!res.data.data) {
         throw new Error('no data found');
       }

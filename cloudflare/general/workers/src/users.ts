@@ -1,10 +1,11 @@
 import { classToPlain, Expose, plainToClass } from "class-transformer";
 import { IsDefined, IsString } from "class-validator";
-import { IttyRequest, IUser } from "./types";
-import { generateResponse, handleError, IResponse, validateObj } from "./utils";
+import { IttyRequest } from "./types";
+import { generateResponse, getAPIURL, handleError, IResponse, useSecure, validateObj } from "./utils";
 import HTTPStatus from 'http-status-codes'
-
-declare const USERS: KVNamespace
+import { parse } from 'set-cookie-parser'
+import { serialize, CookieSerializeOptions } from 'cookie'
+import { authCookieName } from "./auth";
 
 class ILoginArgs {
   @IsDefined()
@@ -17,7 +18,7 @@ class ILoginResponse {
   @IsDefined()
   @IsString()
   @Expose()
-  token!: string
+  publicKey!: string
 }
 
 export const login = async (request: IttyRequest): Promise<Response> => {
@@ -39,28 +40,31 @@ export const login = async (request: IttyRequest): Promise<Response> => {
     return err
   }
 
-  const currUserStr = await USERS.get(loginArgs.username);
-  let userID: string;
-  if (currUserStr !== null) {
-    const currUserObj = plainToClass(IUser, JSON.parse(currUserStr));
-    userID = currUserObj.username;
-  } else {
-    const user: IUser = {
-      ...loginArgs
-    };
-    const userObj = plainToClass(IUser, user);
-    err = await validateObj(userObj, request)
-    if (err) {
-      return err
-    }
-
-    await USERS.put(loginArgs.username, JSON.stringify(classToPlain(userObj)))
-    userID = loginArgs.username;
+  const authRes = await fetch(getAPIURL() + `/auth/${loginArgs.username}`, {
+    method: 'GET',
+  })
+  const authMessage = await authRes.text()
+  if (!authRes.ok) {
+    return handleError(authMessage, request, [], HTTPStatus.UNAUTHORIZED)
   }
+  const headers = new Headers()
+  const cookiesStr = authRes.headers.get('set-cookie')
+  if (!cookiesStr) {
+    return handleError('cannot find cookie', request, [], HTTPStatus.INTERNAL_SERVER_ERROR)
+  }
+  const cookies = parse(cookiesStr)
+  const authCookie = cookies.find(c => c.name === authCookieName)
+  if (!authCookie) {
+    return handleError('cannot find auth cookie', request, [], HTTPStatus.NOT_FOUND)
+  }
+  authCookie.secure = useSecure
+  // authCookie.sameSite = useSecure ? 'strict': 'lax'
+
+  headers.set('set-cookie', serialize(authCookie.name, authCookie.value, authCookie as CookieSerializeOptions))
 
   const res: IResponse<ILoginResponse> = {
     data: {
-      token: 'TODO - get token'
+      publicKey: authMessage
     },
     message: undefined,
     errors: [],
@@ -70,5 +74,5 @@ export const login = async (request: IttyRequest): Promise<Response> => {
     return err
   }
 
-  return generateResponse(JSON.stringify(classToPlain(res)), request)
+  return generateResponse(JSON.stringify(classToPlain(res)), request, headers)
 };

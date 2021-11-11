@@ -65,8 +65,11 @@ export const getAxiosError = (err?: AxiosError): string => {
   }
   if (err.response?.data) {
     const errObj = err.response.data as IResponse<unknown>;
-    if (errObj.errors) {
+    if (errObj.errors.length > 0) {
       return errObj.errors.map(elem => Object.entries(elem).map(([key, val]) => `${key}: ${val}`).join(', ')).join(', ');
+    }
+    if (errObj.message) {
+      return errObj.message;
     }
   }
   return err.message;

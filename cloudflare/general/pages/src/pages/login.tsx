@@ -4,15 +4,41 @@ import { IResponse } from "api/utils";
 import type { AxiosError } from "axios";
 import SEO from "components/SEO";
 import { Field, Form, Formik } from "formik";
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 import { useIntl } from "react-intl";
+import { useHistory } from "react-router";
+import { defaultLoggedInPage, getUsername, usernameKey } from "utils/auth";
 import { axiosClient, getAxiosError } from "utils/axios";
 import { toastDuration } from "utils/misc";
+import { useLocalStorageValue } from '@react-hookz/web';
 import * as yup from 'yup';
 
 const Login: FunctionComponent = () => {
   const { formatMessage } = useIntl();
   const toast = useToast();
+  const history = useHistory();
+  const [redirect, setRedirect] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_username, setUsername, removeUsername] = useLocalStorageValue<string>(usernameKey);
+
+  useEffect(() => {
+    (async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('redirect')) {
+        setRedirect(decodeURIComponent(urlParams.get('redirect') as string));
+      }
+      try {
+        const usernameRes = await getUsername();
+        setUsername(usernameRes);
+        if (usernameRes !== '') {
+          history.replace(redirect !== null ? redirect : defaultLoggedInPage);
+        }
+      } catch (_err) {
+        // not logged in
+        removeUsername();
+      }
+    })();
+  }, [history, redirect, removeUsername, setUsername]);
 
   return (
     <>
@@ -44,15 +70,21 @@ const Login: FunctionComponent = () => {
                 setSubmitting(false);
               };
               try {
-                const res = await axiosClient.post<IResponse<ILoginResponse>>('/posts', {
+                const res = await axiosClient.post<IResponse<ILoginResponse>>('/login', {
                   ...formData
-                } as ILoginArgs);
+                } as ILoginArgs, {
+                  withCredentials: true
+                });
                 if (!res.data || !res.data.data) {
                   throw new Error('no data found');
                 }
                 console.log(`user ${formData.username} logged in`);
+                setUsername(formData.username);
                 setStatus({ success: true });
                 setSubmitting(false);
+                history.push(
+                  redirect !== null ? redirect : defaultLoggedInPage
+                );
               } catch (err) {
                 const errMessage = getAxiosError(err as AxiosError);
                 toast({

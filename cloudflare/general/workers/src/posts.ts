@@ -2,9 +2,9 @@ import { nanoid } from 'nanoid'
 import { IsDefined, IsString, ValidateNested } from 'class-validator'
 import { plainToClass, Expose, classToPlain, Type } from 'class-transformer'
 import HTTPStatus from 'http-status-codes'
-import { IPost, IPostBase, IttyRequest } from './types'
+import { IPost, IPostBase, IttyRequest, IttyRequestCookies } from './types'
 import { generateResponse, handleError, IResponse, validateObj } from './utils'
-import { getUserID } from './auth'
+import { getUsername } from './auth'
 
 declare const POSTS: KVNamespace
 
@@ -13,6 +13,53 @@ class IPostRes extends IPost {
   @IsString()
   @Expose()
   id!: string
+}
+
+const getPostObj = async (postID: string): Promise<IPost> => {
+  const data = await POSTS.get(postID)
+  if (!data) {
+    throw new Error('post not found')
+  }
+  return plainToClass(IPost, JSON.parse(data))
+}
+
+export const getPost = async (request: IttyRequest): Promise<Response> => {
+  if (!request.params) {
+    return handleError(
+      'no request params found',
+      request,
+      [],
+      HTTPStatus.BAD_REQUEST,
+    )
+  }
+
+  const postID = request.params.id
+  if (!postID) {
+    return handleError('no post id found', request, [], HTTPStatus.BAD_REQUEST)
+  }
+
+  let res: IResponse<IPostRes>;
+  try {
+    const post = await getPostObj(postID);
+    res = {
+      data: {
+        ...post,
+        id: postID,
+      },
+      message: undefined,
+      errors: [],
+    }
+  } catch (err) {
+    const errObj = err as Error;
+    return handleError(errObj.message, request, [], HTTPStatus.NOT_FOUND);
+  }
+
+  const err = await validateObj(res, request, HTTPStatus.INTERNAL_SERVER_ERROR)
+  if (err) {
+    return err
+  }
+
+  return generateResponse(JSON.stringify(classToPlain(res)), request)
 }
 
 class IPostsArgs {
@@ -90,7 +137,10 @@ export const getPosts = async (request: IttyRequest): Promise<Response> => {
   return generateResponse(JSON.stringify(classToPlain(res)), request)
 }
 
-const newPostID = (): string => `${new Date().getTime()}_${nanoid()}`
+const newPostID = (): string => {
+  const currTime = new Date().getTime();
+  return `${1e13 - currTime}_${currTime}_${nanoid()}`
+}
 
 class IAddPostArgs extends IPostBase {
   // add post args
@@ -103,7 +153,15 @@ class IAddPostResponse {
   id!: string
 }
 
-export const addPost = async (request: IttyRequest): Promise<Response> => {
+export const addPost = async (request: IttyRequestCookies): Promise<Response> => {
+  let username: string;
+  try {
+    username = await getUsername(request);
+  } catch (err) {
+    const errObj = err as Error;
+    return handleError(errObj.message, request, [], HTTPStatus.UNAUTHORIZED);
+  }
+
   let body: Record<string, unknown>
   try {
     body = await request.json!()
@@ -121,14 +179,13 @@ export const addPost = async (request: IttyRequest): Promise<Response> => {
     return err
   }
 
-  const userID = getUserID(request)
   const postID = newPostID()
   const post: IPost = {
     ...postArgs,
     downvotes: [],
     upvotes: [],
     reactions: [],
-    username: userID
+    username
   }
   const postObj = plainToClass(IPost, post)
   err = await validateObj(postObj, request)
@@ -164,7 +221,7 @@ class IUpdatePostResponse {
   id!: string
 }
 
-export const updatePost = async (request: IttyRequest): Promise<Response> => {
+export const updatePost = async (request: IttyRequestCookies): Promise<Response> => {
   if (!request.params) {
     return handleError(
       'no request params found',
@@ -174,9 +231,28 @@ export const updatePost = async (request: IttyRequest): Promise<Response> => {
     )
   }
 
+  let username: string;
+  try {
+    username = await getUsername(request);
+  } catch (err) {
+    const errObj = err as Error;
+    return handleError(errObj.message, request, [], HTTPStatus.UNAUTHORIZED);
+  }
+
   const postID = request.params.id
   if (!postID) {
     return handleError('no post id found', request, [], HTTPStatus.BAD_REQUEST)
+  }
+
+  let currPost: IPost;
+  try {
+    currPost = await getPostObj(postID);
+  } catch (err) {
+    const errObj = err as Error;
+    return handleError(errObj.message, request, [], HTTPStatus.NOT_FOUND)
+  }
+  if (currPost.username !== username) {
+    return handleError(`user ${username} is not the author of post ${currPost.title}`, request, [], HTTPStatus.UNAUTHORIZED)
   }
 
   let body: Record<string, unknown>
@@ -190,7 +266,10 @@ export const updatePost = async (request: IttyRequest): Promise<Response> => {
       HTTPStatus.BAD_REQUEST,
     )
   }
-  const post = plainToClass(IUpdatePostArgs, body)
+  const post = plainToClass(IUpdatePostArgs, {
+    ...body,
+    ...currPost
+  })
   let err = await validateObj(post, request)
   if (err) {
     return err
@@ -220,7 +299,7 @@ class IDeletePostResponse {
   id!: string
 }
 
-export const deletePost = async (request: IttyRequest): Promise<Response> => {
+export const deletePost = async (request: IttyRequestCookies): Promise<Response> => {
   if (!request.params) {
     return handleError(
       'no request params found',
@@ -230,50 +309,34 @@ export const deletePost = async (request: IttyRequest): Promise<Response> => {
     )
   }
 
+  let username: string;
+  try {
+    username = await getUsername(request);
+  } catch (err) {
+    const errObj = err as Error;
+    return handleError(errObj.message, request, [], HTTPStatus.UNAUTHORIZED);
+  }
+
   const postID = request.params.id
   if (!postID) {
     return handleError('no post id found', request, [], HTTPStatus.BAD_REQUEST)
   }
-  await POSTS.delete(postID)
+
+  let currPost: IPost;
+  try {
+    currPost = await getPostObj(postID);
+  } catch (err) {
+    const errObj = err as Error;
+    return handleError(errObj.message, request, [], HTTPStatus.NOT_FOUND)
+  }
+  if (currPost.username !== username) {
+    return handleError(`user ${username} is not the author of post ${currPost.title}`, request, [], HTTPStatus.UNAUTHORIZED)
+  }
+
+  await POSTS.delete(postID);
 
   const res: IResponse<IDeletePostResponse> = {
     data: {
-      id: postID,
-    },
-    message: undefined,
-    errors: [],
-  }
-  const err = await validateObj(res, request, HTTPStatus.INTERNAL_SERVER_ERROR)
-  if (err) {
-    return err
-  }
-
-  return generateResponse(JSON.stringify(classToPlain(res)), request)
-}
-
-export const getPost = async (request: IttyRequest): Promise<Response> => {
-  if (!request.params) {
-    return handleError(
-      'no request params found',
-      request,
-      [],
-      HTTPStatus.BAD_REQUEST,
-    )
-  }
-
-  const postID = request.params.id
-  if (!postID) {
-    return handleError('no post id found', request, [], HTTPStatus.BAD_REQUEST)
-  }
-
-  const data = await POSTS.get(postID)
-  if (!data) {
-    return handleError('no post found', request, [], HTTPStatus.NOT_FOUND)
-  }
-
-  const res: IResponse<IPostRes> = {
-    data: {
-      ...plainToClass(IPost, JSON.parse(data)),
       id: postID,
     },
     message: undefined,

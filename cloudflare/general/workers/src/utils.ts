@@ -14,8 +14,16 @@ declare const PUBLIC_URL: string
 declare const API_URL: string
 declare const WORKER_URL: string
 declare const MODE: string
+declare const AUTH_API_URL: string
+declare const USE_SECURE: string
 
 export const inProduction = MODE === 'production'
+
+export const useSecure = USE_SECURE === 'true';
+
+export const getAPIURL = (): string => {
+  return AUTH_API_URL;
+};
 
 export class IResponse<T> {
   @IsDefined()
@@ -51,7 +59,7 @@ export const handleError = <T>(
     errors: errors,
     message: message,
   }
-  return generateResponse(JSON.stringify(classToPlain(res)), request, code)
+  return generateResponse(JSON.stringify(classToPlain(res)), request, undefined, code)
 }
 
 export const validateObj = async <T>(
@@ -115,19 +123,20 @@ export const handleCors = (
 export const generateResponse = (
   data: string,
   request: IttyRequest,
+  headers: Headers | undefined = undefined,
   code: number = HTTPStatus.OK,
 ): Response => {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json'
-  }
+  const newHeaders = new Headers(headers)
+  newHeaders.append('Content-Type', 'application/json')
+  newHeaders.append('Access-Control-Allow-Credentials', 'true')
 
   const origin = request.headers.get('Origin')
   if (origin !== null && allowedOrigins.includes(origin)) {
-    headers['Access-Control-Allow-Origin'] = origin
+    newHeaders.append('Access-Control-Allow-Origin', origin)
   }
 
   return new Response(data, {
     status: code,
-    headers,
+    headers: newHeaders,
   })
 }

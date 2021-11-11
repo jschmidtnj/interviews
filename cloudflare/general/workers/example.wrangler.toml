@@ -5,7 +5,6 @@ workers_dev = true
 
 kv_namespaces = [
   {binding = "POSTS", preview_id = "id", id = "id"},
-  {binding = "USERS", preview_id = "id", id = "id"},
 ]
 
 [build]
@@ -16,11 +15,15 @@ format = "service-worker"
 [vars]
 API_URL = "https://api.postit.monster"
 MODE = "production"
+USE_SECURE = "true" # for response
+AUTH_API_URL = "https://api.postit.monster"
 PUBLIC_URL = "https://postit.monster"
 WORKER_URL = "https://postitmonster.worker-api.workers.dev"
 
 [env.development.vars]
 API_URL = "http://localhost:3001"
 MODE = "dev"
+USE_SECURE = "false" # for response
+AUTH_API_URL = "https://api.postit.monster"
 PUBLIC_URL = "http://localhost:3000"
 WORKER_URL = "https://postitmonster.worker-api.workers.dev"

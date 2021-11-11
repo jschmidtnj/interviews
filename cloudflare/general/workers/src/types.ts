@@ -9,6 +9,9 @@ import {
 
 import { Request as IRequest } from 'itty-router'
 export type IttyRequest = IRequest & Request
+export type IttyRequestCookies = IttyRequest & {
+  cookies: { [key: string]: string }
+}
 
 // user -> username
 // reaction -> [user, post, type]
@@ -84,10 +87,6 @@ export class IPost extends IPostBase {
   @IsString({ each: true })
   @Expose()
   downvotes!: string[]
-}
-
-export class IUser {
-  username!: string
 }
 
 export class IReactions {

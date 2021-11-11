@@ -8,8 +8,8 @@ import {
 import HTTPStatus from 'http-status-codes'
 import { Expose, plainToClass, classToPlain } from 'class-transformer'
 import { IsDefined, IsString, IsEnum } from 'class-validator'
-import { validateLoggedIn, getUserID } from './auth'
-import { IPost, IReactions, IttyRequest } from './types'
+import { getUsername } from './auth'
+import { IPost, IReactions, IttyRequest, IttyRequestCookies } from './types'
 
 declare const REACTIONS: KVNamespace
 declare const POSTS: KVNamespace
@@ -22,25 +22,23 @@ class IUserPostReactionsArgs {
 }
 
 export const getUserPostReactions = async (
-  request: IttyRequest,
+  request: IttyRequestCookies,
 ): Promise<Response> => {
-  validateLoggedIn(request)
-  const userID = getUserID(request)
-  if (!request.query) {
-    return handleError(
-      'no request query provided',
-      request,
-      [],
-      HTTPStatus.BAD_REQUEST,
-    )
+  let username: string;
+  try {
+    username = await getUsername(request);
+  } catch (err) {
+    const errObj = err as Error;
+    return handleError(errObj.message, request, [], HTTPStatus.UNAUTHORIZED);
   }
+
   const args = plainToClass(IUserPostReactionsArgs, request.query)
   let err = await validateObj(args, request)
   if (err) {
     return err
   }
 
-  const reactionsID = getReactionsKey(userID, args.post)
+  const reactionsID = getReactionsKey(username, args.post)
   const reactionsStr = await REACTIONS.get(reactionsID)
   if (!reactionsStr) {
     return handleError(
@@ -109,9 +107,15 @@ class IReactResponse {
   action!: ReactAction
 }
 
-export const react = async (request: IttyRequest): Promise<Response> => {
-  validateLoggedIn(request)
-  const userID = getUserID(request)
+export const react = async (request: IttyRequestCookies): Promise<Response> => {
+  let username: string
+  try {
+    username = await getUsername(request);
+  } catch (err) {
+    const errObj = err as Error;
+    return handleError(errObj.message, request, [], HTTPStatus.UNAUTHORIZED);
+  }
+
   let body: Record<string, unknown>
   try {
     body = await request.json!()
@@ -148,7 +152,7 @@ export const react = async (request: IttyRequest): Promise<Response> => {
     (reaction) => reaction.type === args.reaction,
   )
 
-  const reactionID = getReactionsKey(userID, args.post)
+  const reactionID = getReactionsKey(username, args.post)
   let action: ReactAction
   if (!postReaction) {
     // add to reaction
@@ -184,7 +188,7 @@ export const react = async (request: IttyRequest): Promise<Response> => {
   const res: IResponse<IReactResponse> = {
     data: {
       action,
-      user: userID,
+      user: username,
       reaction: args.reaction,
     },
     errors: [],
