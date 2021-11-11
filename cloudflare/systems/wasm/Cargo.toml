@@ -1,6 +1,9 @@
 [package]
 name = "auth"
 version = "0.1.0"
+description = "auth server"
+license-file = "../../LICENSE"
+repository = "https://github.com/jschmidtnj/interviews"
 authors = ["Joshua <jschmidtnj@gmail.com>"]
 edition = "2018"
 
