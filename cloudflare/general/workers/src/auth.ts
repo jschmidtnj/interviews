@@ -1,11 +1,14 @@
 import { IttyRequestCookies } from './types'
 import { generateResponse, useSecure } from './utils'
 import { serialize } from 'cookie'
-import { decodeJWT } from 'jwt-parse'
+import { importSPKI, jwtVerify } from 'jose'
+
+declare const PUBLIC_KEY: string;
 
 export const authCookieName = 'token'
 const jwtIssuer = 'PostIt Monster'
 const jwtAudience = 'post-it-users'
+const algorithm = 'RS256'
 
 export const getUsername = async (
   request: IttyRequestCookies,
@@ -15,13 +18,20 @@ export const getUsername = async (
   }
 
   const token = request.cookies[authCookieName]
-  const data = decodeJWT(token)
 
-  if (data.payload.iss !== jwtIssuer || !data.payload.aud.includes(jwtAudience)) {
-    throw new Error('invalid jwt')
+  const publicKey = await importSPKI(PUBLIC_KEY, algorithm)
+
+  const data = await jwtVerify(token, publicKey, {
+    audience: [jwtAudience],
+    issuer: jwtIssuer,
+    algorithms: [algorithm]
+  })
+
+  if (!data.payload.sub) {
+    throw new Error('no sub found in cookie')
   }
 
-  return data.payload.sub as string
+  return data.payload.sub
 }
 
 export const logout = async (

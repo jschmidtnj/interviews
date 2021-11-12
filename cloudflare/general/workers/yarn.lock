@@ -2827,6 +2827,11 @@ jest@^27.0.1:
     import-local "^3.0.2"
     jest-cli "^27.3.1"
 
+jose@^4.3.4:
+  version "4.3.4"
+  resolved "https://registry.yarnpkg.com/jose/-/jose-4.3.4.tgz#097d88b2d3f4749505928d7a020ea3dfaaacb89e"
+  integrity sha512-OzctIiawKzjsz95T9luzgMixcNToqWcA1WJA3d6qBwFwatCsd5QLjp89WWEZsKAziVYmWkVNsknggiBUu4IzhA==
+
 js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz"
@@ -2911,11 +2916,6 @@ json5@^1.0.1:
   integrity sha512-aKS4WQjPenRxiQsC93MNfjx+nbF4PAdYzmd/1JIj8HYzqfbu86beTuNgXDzPknWk0n0uARlyewZo4s++ES36Ow==
   dependencies:
     minimist "^1.2.0"
-
-jwt-parse@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/jwt-parse/-/jwt-parse-1.0.2.tgz#41969f96f39d810949cfb4b5de4b856e5e2b0555"
-  integrity sha512-xyfjckcNHTC++buujjQ96o0Utqy045ItGrZsBaV5X8XgN5FMvaSQAI5nbAszgzgHdFD+/tSi0smViYazayl/Sg==
 
 kind-of@^6.0.2:
   version "6.0.3"

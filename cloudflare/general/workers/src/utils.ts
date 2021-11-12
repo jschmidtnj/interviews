@@ -10,20 +10,12 @@ import {
 import HTTPStatus from 'http-status-codes'
 import { IttyRequest } from './types'
 
-export declare const PUBLIC_URL: string
-export declare const API_URL: string
-export declare const WORKER_URL: string
 declare const MODE: string
-declare const AUTH_API_URL: string
 declare const USE_SECURE: string
 
 export const inProduction = MODE === 'production'
 
 export const useSecure = USE_SECURE === 'true'
-
-export const getAPIURL = (): string => {
-  return AUTH_API_URL
-}
 
 export class IResponse<T> {
   @IsDefined()
