@@ -1,4 +1,5 @@
 # config
+.env
 ../../wrangler.toml
 
 # misc
