@@ -52,7 +52,7 @@ async fn main() -> std::io::Result<()> {
             Ok(i) => i,
             Err(_err) => panic!("cannot find worker url in env"),
         };
-        let allowed_origins = vec![public_url, api_url, worker_url];
+        let allowed_origins = vec!["http://localhost".to_string(), public_url, api_url, worker_url];
         let cors_params = get_cors_params();
 
         let cors = Cors::default()

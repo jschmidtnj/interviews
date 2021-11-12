@@ -22,6 +22,7 @@ class ILoginResponse {
 }
 
 export const login = async (request: IttyRequest): Promise<Response> => {
+  console.log('handle login request')
   let body: Record<string, unknown>
   try {
     body = await request.json!()
@@ -40,6 +41,7 @@ export const login = async (request: IttyRequest): Promise<Response> => {
     return err
   }
 
+  console.log('get from api', getAPIURL() + `/auth/${loginArgs.username}`)
   const authRes = await fetch(getAPIURL() + `/auth/${loginArgs.username}`, {
     method: 'GET',
   })

@@ -1,61 +1,51 @@
+use http::header::{ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_MAX_AGE};
 use http::StatusCode;
 use worker::*;
+use crate::mode::is_production;
 use crate::shared::utils::get_cors_params;
 
 pub fn handle_cors(req: Request, ctx: RouteContext<()>) -> Result<Response> {
-    let public_url = match ctx.var("PUBLIC_URL") {
-        Ok(i) => i.to_string(),
-        Err(_i) => return Response::error("cannot get public url".to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
-    };
-    let api_url = match ctx.var("API_URL") {
-        Ok(i) => i.to_string(),
-        Err(_i) => return Response::error("cannot get api url".to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
-    };
-    let worker_url = match ctx.var("WORKER_URL") {
-        Ok(i) => i.to_string(),
-        Err(_i) => return Response::error("cannot get worker url".to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
-    };
-
-    let allowed_origins = vec![public_url, api_url, worker_url];
-
     let cors_params = get_cors_params();
 
     let mut headers = Headers::new();
-    match headers.set("access-control-allow-methods", cors_params.allowed_methods.iter().map(|i| -> String {
+    match headers.set(ACCESS_CONTROL_ALLOW_METHODS.as_str(), cors_params.allowed_methods.iter().map(|i| -> String {
         i.to_string()
     }).collect::<Vec<String>>().join(", ").as_str()) {
         Ok(_) => (),
         Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     }
-    match headers.set("access-control-allow-headers", cors_params.allowed_headers.iter().map(|i| -> String {
+    match headers.set(ACCESS_CONTROL_ALLOW_HEADERS.as_str(), cors_params.allowed_headers.iter().map(|i| -> String {
         i.to_string()
     }).collect::<Vec<String>>().join(", ").as_str()) {
         Ok(_) => (),
         Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     }
-    match headers.set("access-control-allow-credentials", "true") {
+    match headers.set(ACCESS_CONTROL_ALLOW_CREDENTIALS.as_str(), "true") {
         Ok(_) => (),
         Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     }
-    match headers.set("access-control-max-age", "86400") {
+    match headers.set(ACCESS_CONTROL_MAX_AGE.as_str(), "86400") {
         Ok(_) => (),
         Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     }
     match req.headers().get("origin") {
         Ok(i) => match i {
             Some(origin) => {
-                if allowed_origins.contains(&origin) {
-                    match headers.set("access-control-allow-origin", origin.as_str()) {
-                        Ok(_) => (),
-                        Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
-                    }
+                let production = match is_production(&ctx) {
+                    Ok(i) => i,
+                    Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+                };
+                let curr_origin = if production { origin } else { "http://localhost".to_string() };
+                match headers.set(ACCESS_CONTROL_ALLOW_ORIGIN.as_str(), curr_origin.as_str()) {
+                    Ok(_) => (),
+                    Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
                 }
             }
-            None => (),
+            None => return Response::error("cannot find origin".to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
         },
         Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     };
     Response::empty().map(|res| {
-        res.with_headers(headers)
+        res.with_headers(headers).with_status(StatusCode::NO_CONTENT.as_u16())
     })
 }

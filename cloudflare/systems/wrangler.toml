@@ -24,11 +24,11 @@ WORKERS_RS_VERSION = "0.0.7"
 API_URL = "https://api.postit.monster"
 MODE = "production"
 PUBLIC_URL = "https://postit.monster"
-WORKER_URL = "https://postitmonster.worker-api.workers.dev"
+WORKER_URL = "https://postitmonster-auth.worker-api.workers.dev"
 
 [env.development.vars]
 WORKERS_RS_VERSION = "0.0.7"
-API_URL = "http://localhost:3001"
+API_URL = "http://localhost:3002"
 MODE = "dev"
 PUBLIC_URL = "http://localhost:3000"
 WORKER_URL = "https://postitmonster.worker-api.workers.dev"

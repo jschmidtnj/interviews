@@ -1,6 +1,6 @@
 use cookie::{Cookie, CookieJar};
 
-pub fn get_cookies(req: worker::Request) -> Result<CookieJar, String> {
+pub fn get_cookies(req: &worker::Request) -> Result<CookieJar, String> {
     let cookies = match req.headers().get("Cookie") {
         Ok(i) => match i {
             Some(cookies) => {
