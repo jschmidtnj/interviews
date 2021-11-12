@@ -1,8 +1,11 @@
 import { IttyRequestCookies } from './types'
-import { generateResponse, getAPIURL, useSecure } from './utils'
+import { generateResponse, useSecure } from './utils'
 import { serialize } from 'cookie'
+import { decodeJWT } from 'jwt-parse'
 
 export const authCookieName = 'token'
+const jwtIssuer = 'PostIt Monster'
+const jwtAudience = 'post-it-users'
 
 export const getUsername = async (
   request: IttyRequestCookies,
@@ -11,17 +14,14 @@ export const getUsername = async (
     throw new Error('no auth cookie found')
   }
 
-  const res = await fetch(getAPIURL() + '/verify', {
-    method: 'GET',
-    headers: {
-      Cookie: `${authCookieName}=${request.cookies[authCookieName]}`,
-    },
-  })
-  const message = await res.text()
-  if (!res.ok) {
-    throw new Error(message)
+  const token = request.cookies[authCookieName]
+  const data = decodeJWT(token)
+
+  if (data.payload.iss !== jwtIssuer || !data.payload.aud.includes(jwtAudience)) {
+    throw new Error('invalid jwt')
   }
-  return message
+
+  return data.payload.sub as string
 }
 
 export const logout = async (

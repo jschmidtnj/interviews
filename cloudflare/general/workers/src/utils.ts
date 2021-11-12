@@ -10,9 +10,9 @@ import {
 import HTTPStatus from 'http-status-codes'
 import { IttyRequest } from './types'
 
-declare const PUBLIC_URL: string
-declare const API_URL: string
-declare const WORKER_URL: string
+export declare const PUBLIC_URL: string
+export declare const API_URL: string
+export declare const WORKER_URL: string
 declare const MODE: string
 declare const AUTH_API_URL: string
 declare const USE_SECURE: string
@@ -88,8 +88,6 @@ export const validateObj = async <T>(
 export const getReactionsKey = (user: string, post: string): string =>
   `${user}:${post}`
 
-const allowedOrigins = [PUBLIC_URL, API_URL, WORKER_URL]
-
 export const handleCors = (
   request: IttyRequest,
   methods: string[] = ['GET', 'POST', 'PUT', 'DELETE'],
@@ -104,7 +102,7 @@ export const handleCors = (
     }
 
     const origin = request.headers.get('Origin')
-    if (origin !== null && allowedOrigins.includes(origin)) {
+    if (origin !== null) {
       headers['Access-Control-Allow-Origin'] = origin
     }
 
@@ -136,7 +134,7 @@ export const generateResponse = (
   newHeaders.append('Access-Control-Allow-Credentials', 'true')
 
   const origin = request.headers.get('Origin')
-  if (origin !== null && allowedOrigins.includes(origin)) {
+  if (origin !== null) {
     newHeaders.append('Access-Control-Allow-Origin', origin)
   }
 

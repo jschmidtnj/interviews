@@ -2912,6 +2912,11 @@ json5@^1.0.1:
   dependencies:
     minimist "^1.2.0"
 
+jwt-parse@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/jwt-parse/-/jwt-parse-1.0.2.tgz#41969f96f39d810949cfb4b5de4b856e5e2b0555"
+  integrity sha512-xyfjckcNHTC++buujjQ96o0Utqy045ItGrZsBaV5X8XgN5FMvaSQAI5nbAszgzgHdFD+/tSi0smViYazayl/Sg==
+
 kind-of@^6.0.2:
   version "6.0.3"
   resolved "https://registry.npmjs.org/kind-of/-/kind-of-6.0.3.tgz"
