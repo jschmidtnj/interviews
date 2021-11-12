@@ -19,11 +19,11 @@ declare const USE_SECURE: string
 
 export const inProduction = MODE === 'production'
 
-export const useSecure = USE_SECURE === 'true';
+export const useSecure = USE_SECURE === 'true'
 
 export const getAPIURL = (): string => {
-  return AUTH_API_URL;
-};
+  return AUTH_API_URL
+}
 
 export class IResponse<T> {
   @IsDefined()
@@ -59,7 +59,12 @@ export const handleError = <T>(
     errors: errors,
     message: message,
   }
-  return generateResponse(JSON.stringify(classToPlain(res)), request, undefined, code)
+  return generateResponse(
+    JSON.stringify(classToPlain(res)),
+    request,
+    undefined,
+    code,
+  )
 }
 
 export const validateObj = async <T>(

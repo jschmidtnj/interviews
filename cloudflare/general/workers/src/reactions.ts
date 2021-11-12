@@ -24,12 +24,12 @@ class IUserPostReactionsArgs {
 export const getUserPostReactions = async (
   request: IttyRequestCookies,
 ): Promise<Response> => {
-  let username: string;
+  let username: string
   try {
-    username = await getUsername(request);
+    username = await getUsername(request)
   } catch (err) {
-    const errObj = err as Error;
-    return handleError(errObj.message, request, [], HTTPStatus.UNAUTHORIZED);
+    const errObj = err as Error
+    return handleError(errObj.message, request, [], HTTPStatus.UNAUTHORIZED)
   }
 
   const args = plainToClass(IUserPostReactionsArgs, request.query)
@@ -110,10 +110,10 @@ class IReactResponse {
 export const react = async (request: IttyRequestCookies): Promise<Response> => {
   let username: string
   try {
-    username = await getUsername(request);
+    username = await getUsername(request)
   } catch (err) {
-    const errObj = err as Error;
-    return handleError(errObj.message, request, [], HTTPStatus.UNAUTHORIZED);
+    const errObj = err as Error
+    return handleError(errObj.message, request, [], HTTPStatus.UNAUTHORIZED)
   }
 
   let body: Record<string, unknown>
