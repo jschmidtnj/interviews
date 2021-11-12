@@ -27,10 +27,6 @@ export interface IPost extends IPostBase {
   downvotes: string[];
 };
 
-export interface IUser {
-  username: string;
-}
-
 export interface IReactions {
   types: string[];
 }

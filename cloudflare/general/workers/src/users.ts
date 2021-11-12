@@ -43,9 +43,11 @@ export const login = async (request: IttyRequest): Promise<Response> => {
 
   console.log('get from api', getAPIURL() + `/auth/${loginArgs.username}`)
   const authRes = await fetch(getAPIURL() + `/auth/${loginArgs.username}`, {
-    method: 'GET',
+    method: 'GET'
   })
+  console.log('done with get')
   const authMessage = await authRes.text()
+  console.log(authMessage)
   if (!authRes.ok) {
     return handleError(authMessage, request, [], HTTPStatus.UNAUTHORIZED)
   }

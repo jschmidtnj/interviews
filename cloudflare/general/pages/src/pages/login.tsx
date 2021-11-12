@@ -1,6 +1,4 @@
 import { Box, Button, Container, FormControl, FormErrorMessage, FormLabel, Heading, Input, useColorModeValue, useToast } from "@chakra-ui/react";
-import { ILoginArgs, ILoginResponse } from "api/users";
-import { IResponse } from "api/utils";
 import type { AxiosError } from "axios";
 import SEO from "components/SEO";
 import { Field, Form, Formik } from "formik";
@@ -8,7 +6,7 @@ import React, { FunctionComponent, useEffect, useState } from "react";
 import { useIntl } from "react-intl";
 import { useHistory } from "react-router";
 import { defaultLoggedInPage, getUsername, usernameKey } from "utils/auth";
-import { axiosClient, getAxiosError } from "utils/axios";
+import { axiosClient, getAuthAPIURL, getAxiosError } from "utils/axios";
 import { toastDuration } from "utils/misc";
 import { useLocalStorageValue } from '@react-hookz/web';
 import * as yup from 'yup';
@@ -58,7 +56,7 @@ const Login: FunctionComponent = () => {
           <Formik
             initialValues={{
               username: '',
-            } as ILoginArgs}
+            }}
             validationSchema={yup.object({
               username: yup.string().required('required'),
             })}
@@ -70,12 +68,12 @@ const Login: FunctionComponent = () => {
                 setSubmitting(false);
               };
               try {
-                const res = await axiosClient.post<IResponse<ILoginResponse>>('/login', {
-                  ...formData
-                } as ILoginArgs, {
-                  withCredentials: true
+                const res = await axiosClient.get<string>(`/auth/${formData.username}`, {
+                  withCredentials: true,
+                  baseURL: getAuthAPIURL(),
+                  responseType: 'text'
                 });
-                if (!res.data || !res.data.data) {
+                if (!res.data) {
                   throw new Error('no data found');
                 }
                 console.log(`user ${formData.username} logged in`);

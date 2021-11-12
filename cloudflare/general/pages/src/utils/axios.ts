@@ -16,26 +16,16 @@ export const getAPIURL = (): string => {
   return `${useSecure ? 'https' : 'http'}://${process.env.REACT_APP_API_URL}`;
 };
 
+export const getAuthAPIURL = (): string => {
+  return `${useSecure ? 'https' : 'http'}://${process.env.REACT_APP_AUTH_API_URL}`;
+};
+
 export let axiosClient: AxiosInstance;
 
 export const createAxiosClient = (): void => {
   axiosClient = axios.create({
     baseURL: getAPIURL(),
   });
-
-  axiosClient.interceptors.request.use(
-    (config) => {
-      // TODO - handle auth for api
-      // if (config.baseURL === getAPIURL() && !config.headers.Authorization) {
-      //   const token = getAuthToken();
-      //   if (token) {
-      //     config.headers.Authorization = buildAuthHeader(token);
-      //   }
-      // }
-      return config;
-    },
-    (error) => Promise.reject(error)
-  );
 
   axiosClient.interceptors.response.use(
     (response) => response,

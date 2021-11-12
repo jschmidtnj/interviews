@@ -7,7 +7,7 @@ mod cookies;
 mod cors;
 
 use worker::*;
-use crate::cors::handle_cors;
+use crate::cors::{handle_cors, wrap_cors};
 
 #[event(fetch)]
 pub async fn main(req: Request, env: worker::Env) -> Result<Response> {
@@ -15,12 +15,12 @@ pub async fn main(req: Request, env: worker::Env) -> Result<Response> {
 
     router
         .options("/", handle_cors)
-        .get("/", |_req, _ctx| {
-            Response::from_json(&shared::hello::index())
+        .get("/", |req, ctx| {
+            wrap_cors(req, &ctx, Response::from_json(&shared::hello::index()))
         })
         .options("/hello", handle_cors)
-        .get("/hello", |_req, _ctx| {
-            Response::from_json(&shared::hello::hello())
+        .get("/hello", |req, ctx| {
+            wrap_cors(req, &ctx, Response::from_json(&shared::hello::hello()))
         })
         .options("/auth/:username", handle_cors)
         .get_async("/auth/:username", |req, ctx| async move {

@@ -12,10 +12,10 @@ const router = Router()
 
 router.get('/', index)
 router.get('/hello', hello)
-if (!inProduction) {
-  router.options('/verify', handleCors)
-  router.get('/verify', withCookies, verify)
-}
+// if (!inProduction) {
+//   router.options('/verify', handleCors)
+//   router.get('/verify', withCookies, verify)
+// }
 
 // posts
 router.options('/posts', handleCors)
@@ -28,8 +28,8 @@ router.put('/posts/:id', withCookies, updatePost)
 router.delete('/posts/:id', withCookies, deletePost)
 
 // users
-router.options('/login', handleCors)
-router.post('/login', login)
+// router.options('/login', handleCors)
+// router.post('/login', login)
 
 router.options('/logout', handleCors)
 router.put('/logout', withCookies, logout)
