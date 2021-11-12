@@ -59,5 +59,7 @@ issues for a couple hours I decided to create a separate `request_text` function
 and create a pull request sometime.
 
 The most difficult part was getting everything working with wasm in the cloudflare workers runtime. I did all the extra
-credit, and am working on integrating with my web app. See the endpoints above. I didn't integrate directly through the workers.dev endpoint, using dns to route between the 2 workers (through my domain name). That's why it won't show as working in the autograder.
+credit, and it's now integrated with the web app. See the endpoints above. I didn't integrate directly through the workers.dev endpoint, using dns to route between the 2 workers (through my domain name). That's why I didn't get all the extra points in the autograder.
+
+I'm still working on adding new features to the frontend, but it works so I'm going to submit it now.
 
