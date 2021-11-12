@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use chrono::{Utc};
 use cookie::{Cookie, SameSite};
-use http::header::{ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_ALLOW_CREDENTIALS, ORIGIN};
 use http::StatusCode;
 use instant::Instant;
 use jwt_simple::algorithms::RSAKeyPairLike;
@@ -224,30 +223,5 @@ pub async fn verify(req: Request, ctx: RouteContext<()>) -> Result<Response> {
         Err(err) => return wrap_cors(req, &ctx, Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16())),
     };
 
-    let mut headers = Headers::new();
-    match req.headers().get(ORIGIN.as_str()) {
-        Ok(i) => match i {
-            Some(origin) => {
-                let production = match is_production(&ctx) {
-                    Ok(i) => i,
-                    Err(err) => return wrap_cors(req, &ctx, Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16())),
-                };
-                let curr_origin = if production { origin } else { "http://localhost".to_string() };
-                match headers.set(ACCESS_CONTROL_ALLOW_ORIGIN.as_str(), curr_origin.as_str()) {
-                    Ok(_) => (),
-                    Err(err) => return wrap_cors(req, &ctx, Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16())),
-                }
-            }
-            None => return wrap_cors(req, &ctx, Response::error("cannot find origin".to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16())),
-        },
-        Err(err) => return wrap_cors(req, &ctx, Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16())),
-    };
-    match headers.set(ACCESS_CONTROL_ALLOW_CREDENTIALS.as_str(), "true") {
-        Ok(_) => (),
-        Err(err) => return wrap_cors(req, &ctx, Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16())),
-    }
-
-    wrap_cors(req, &ctx, Response::ok(username).map(|res| {
-        res.with_headers(headers)
-    }))
+    wrap_cors(req, &ctx, Response::ok(username))
 }

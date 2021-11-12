@@ -19,7 +19,7 @@ pub fn wrap_cors(req: Request, ctx: &RouteContext<()>, res: Result<Response>) ->
                     Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
                 }
             }
-            None => return Response::error("cannot find origin".to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
+            None => (),
         },
         Err(err) => return Response::error(err.to_string(), StatusCode::INTERNAL_SERVER_ERROR.as_u16()),
     };

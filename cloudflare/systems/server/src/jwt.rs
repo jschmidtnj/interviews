@@ -140,11 +140,6 @@ pub async fn sign(web::Path(username): web::Path<String>) -> HttpResponse {
 
 #[get("/verify")]
 pub async fn verify(req: HttpRequest) -> HttpResponse {
-    let cookies = match req.cookies() {
-        Ok(i) => i,
-        Err(err) => return HttpResponse::Unauthorized().body(err.to_string()),
-    };
-    println!("{}", cookies.len());
     let token = match req.cookie(AUTH_COOKIE) {
         Some(i) => i.value().to_string(),
         None => return HttpResponse::Unauthorized().body("cannot find auth token"),
