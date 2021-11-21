@@ -53,15 +53,15 @@ export const getAxiosError = (err?: AxiosError): string => {
   if (!err) {
     return 'unknown error';
   }
-  if (err.response?.data) {
-    const errObj = err.response.data as IResponse<unknown>;
-    if (errObj.errors?.length > 0) {
-      return errObj.errors.map(elem => Object.entries(elem).map(([key, val]) => `${key}: ${val}`).join(', ')).join(', ');
-    }
-    if (errObj.message) {
-      return errObj.message;
-    }
-    return errObj as unknown as string;
+  if (!err.response?.data) {
+    return err.message;
   }
-  return err.message;
+  const errObj = err.response.data as IResponse<unknown>;
+  if (errObj.errors?.length > 0) {
+    return errObj.errors.map(elem => Object.entries(elem).map(([key, val]) => `${key}: ${val}`).join(', ')).join(', ');
+  }
+  if (errObj.message) {
+    return errObj.message;
+  }
+  return errObj as unknown as string;
 };
