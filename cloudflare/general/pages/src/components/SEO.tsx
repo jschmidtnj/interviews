@@ -13,7 +13,7 @@ const SEO: FunctionComponent<SEOArgs> = (args) => {
         <title>post it | {args.page}</title>
         <script
           async
-          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.GOOGLE_ANALYTICS_ID}`}
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.REACT_APP_GOOGLE_ANALYTICS_ID}`}
         />
         <script
           dangerouslySetInnerHTML={{
@@ -21,7 +21,7 @@ const SEO: FunctionComponent<SEOArgs> = (args) => {
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${process.env.GOOGLE_ANALYTICS_ID}');
+                gtag('config', '${process.env.REACT_APP_GOOGLE_ANALYTICS_ID}');
             `,
           }}
         />
