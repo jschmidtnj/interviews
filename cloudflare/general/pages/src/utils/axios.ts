@@ -63,5 +63,5 @@ export const getAxiosError = (err?: AxiosError): string => {
   if (errObj.message) {
     return errObj.message;
   }
-  return errObj as unknown as string;
+  return err.response.data as string;
 };
