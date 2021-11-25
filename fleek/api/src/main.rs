@@ -5,6 +5,7 @@ mod auth;
 mod redis;
 mod mode;
 mod keys;
+mod logs;
 
 use actix_cors::Cors;
 use actix_web::{App, web, HttpServer};
