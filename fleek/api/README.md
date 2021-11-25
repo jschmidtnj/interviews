@@ -2,3 +2,4 @@
 
 - `cargo watch -x run`
 - http://localhost:8080/webui - see proxied web ui
+- http://localhost:8080/* - run proxied request
