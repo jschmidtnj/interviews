@@ -1,3 +1,4 @@
+use std::env;
 use std::str::FromStr;
 use regex::Regex;
 use actix_web::{HttpRequest, web, HttpResponse};
@@ -7,9 +8,12 @@ use r2d2_redis::redis::Commands;
 use crate::AppData;
 use crate::keys::{KEY_COOKIE, KeyData};
 
-const PROXIED_URL: &str = "http://localhost:5001";
-
 pub async fn handler(req: HttpRequest, app_data: web::Data<AppData>) -> HttpResponse {
+    let proxy_url = match env::var("PROXY_URL") {
+        Ok(i) => i,
+        Err(_err) => return HttpResponse::BadRequest().body("no proxy url found in env"),
+    };
+
     let token = match req.headers().get("authorization") {
         Some(i) => match i.to_str() {
             Ok(i) => i.to_string(),
@@ -46,7 +50,7 @@ pub async fn handler(req: HttpRequest, app_data: web::Data<AppData>) -> HttpResp
         return HttpResponse::Unauthorized().body("api key expired");
     }
 
-    let proxy = match reqwest::Proxy::http(PROXIED_URL.to_string()) {
+    let proxy = match reqwest::Proxy::http(proxy_url.to_string()) {
         Ok(i) => i,
         Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
     };
@@ -58,7 +62,7 @@ pub async fn handler(req: HttpRequest, app_data: web::Data<AppData>) -> HttpResp
         Ok(i) => i,
         Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
     };
-    let proxied_request = match client.request(method, PROXIED_URL.to_string() + req.path()).build() {
+    let proxied_request = match client.request(method, proxy_url + req.path()).build() {
         Ok(i) => i,
         Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
     };
