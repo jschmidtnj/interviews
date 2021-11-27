@@ -7,4 +7,10 @@
 - POST http://localhost:8080/keys - add new api key
 - GET http://localhost:8080/keys - list user's api keys
 - GET http://localhost:8080/keys/<key_id> - get information about specific key
+- GET http://localhost:8080/keys/<key_id>/use - use specific key (w/ cookie)
 - DELETE http://localhost:8080/keys/<key_id> - deactivate specific key
+
+TODO:
+- logging
+- validation error message parsing
+- hash api keys before storage
