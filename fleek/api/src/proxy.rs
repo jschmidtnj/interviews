@@ -1,12 +1,50 @@
 use std::str::FromStr;
 use regex::Regex;
-use actix_web::{HttpRequest, HttpResponse};
+use actix_web::{HttpRequest, web, HttpResponse};
+use chrono::Utc;
 use reqwest::Method;
+use r2d2_redis::redis::Commands;
+use crate::AppData;
+use crate::keys::{KEY_COOKIE, KeyData};
 
 const PROXIED_URL: &str = "http://localhost:5001";
 
-pub async fn handler(req: HttpRequest) -> HttpResponse {
-    // do authentication with redis kv store
+pub async fn handler(req: HttpRequest, app_data: web::Data<AppData>) -> HttpResponse {
+    let token = match req.headers().get("authorization") {
+        Some(i) => match i.to_str() {
+            Ok(i) => i.to_string(),
+            Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
+        },
+        None => match req.cookie(KEY_COOKIE) {
+            Some(i) => i.to_string(),
+            None => return HttpResponse::Unauthorized().body("no api key found in header or cookies"),
+        },
+    };
+    let api_key_vec = token.split("Bearer ").collect::<Vec<&str>>();
+    if api_key_vec.len() < 1 {
+        return HttpResponse::Unauthorized().body("invalid bearer token provided");
+    }
+    let key_id = api_key_vec[0].to_string();
+
+    let mut redis_connection = match app_data.connection.get() {
+        Ok(i) => i,
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
+    };
+
+    let key_data_str: String = match (*redis_connection).get(format!("key_*_{}", key_id.to_string())) {
+        Ok(i) => i,
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
+    };
+
+    let key_data: KeyData = match serde_json::from_str(key_data_str.as_str()) {
+        Ok(i) => i,
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
+    };
+
+    let now = Utc::now();
+    if key_data.expires_at < now.timestamp_millis() as u64 {
+        return HttpResponse::Unauthorized().body("api key expired");
+    }
 
     let proxy = match reqwest::Proxy::http(PROXIED_URL.to_string()) {
         Ok(i) => i,

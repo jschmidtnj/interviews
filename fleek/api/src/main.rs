@@ -5,7 +5,6 @@ mod auth;
 mod redis;
 mod mode;
 mod keys;
-mod logs;
 
 use actix_cors::Cors;
 use actix_web::{App, web, HttpServer};
@@ -49,6 +48,8 @@ async fn main() -> std::io::Result<()> {
         });
         App::new().app_data(app_data).wrap(cors).service(auth::login)
             .service(misc::hello).route("/{path:.*}", web::to(proxy::handler))
+            .service(keys::get_keys).service(keys::add_key).service(keys::get_key)
+            .service(keys::use_key).service(keys::deactivate_key)
     })
         .bind(address)?
         .run()

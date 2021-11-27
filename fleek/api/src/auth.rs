@@ -2,13 +2,13 @@ use std::env;
 use chrono::prelude::{Utc};
 use serde::{Serialize, Deserialize};
 use validator::{Validate, ValidationErrors};
-use actix_web::{put, web, HttpResponse};
+use actix_web::{put, web, HttpResponse, HttpRequest};
 use actix_web::cookie::{Cookie, SameSite};
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
 use chrono::Duration;
-use jsonwebtoken::{encode, EncodingKey, Header};
+use jsonwebtoken::{DecodingKey, encode, decode, EncodingKey, Header, Validation, TokenData};
 use r2d2_redis::redis::Commands;
 use nanoid::nanoid;
 use crate::AppData;
@@ -43,21 +43,40 @@ fn get_jwt_key() -> Result<String, String> {
 }
 
 fn get_user_key(email: String) -> String {
-    return "user_".to_string() + email.as_str();
+    return format!("user_{}", email);
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct JWTClaims {
-    aud: String,         // Optional. Audience
-    exp: usize,          // Required (validate_exp defaults to true in validation). Expiration time (as UTC timestamp)
-    iat: usize,          // Optional. Issued at (as UTC timestamp)
-    iss: String,         // Optional. Issuer
-    nbf: usize,          // Optional. Not Before (as UTC timestamp)
-    sub: String,         // Optional. Subject (whom token refers to)
+pub struct JWTClaims {
+    pub aud: String,         // Optional. Audience
+    pub exp: usize,          // Required (validate_exp defaults to true in validation). Expiration time (as UTC timestamp)
+    pub iat: usize,          // Optional. Issued at (as UTC timestamp)
+    pub iss: String,         // Optional. Issuer
+    pub nbf: usize,          // Optional. Not Before (as UTC timestamp)
+    pub sub: String,         // Optional. Subject (whom token refers to)
 }
 
-pub fn logged_in() -> bool {
-    return false;
+pub fn logged_in(request: HttpRequest) -> Option<TokenData<JWTClaims>> {
+    let jwt_secret = match get_jwt_key() {
+        Ok(i) => i,
+        Err(_err) => return None,
+    };
+
+    let token = match request.cookie(AUTH_COOKIE) {
+        Some(i) => i.value().to_string(),
+        None => return None,
+    };
+
+    let mut validation = Validation::default();
+    validation.set_audience(&[AUDIENCE.to_string()]);
+    validation.iss = Some(ISSUER.to_string());
+
+    let data = match decode::<JWTClaims>(&token, &DecodingKey::from_secret(jwt_secret.as_bytes()), &validation) {
+        Ok(i) => i,
+        Err(_err) => return None,
+    };
+
+    return Some(data);
 }
 
 #[put("/login")]
@@ -133,7 +152,7 @@ pub fn login(user_params: web::Json<UserParams>, app_data: web::Data<AppData>) -
         iat: now.timestamp_millis() as usize,
         iss: ISSUER.to_string(),
         nbf: now.timestamp_millis() as usize,
-        sub: user_params.email.to_string()
+        sub: user_id.to_string(),
     };
 
     let token = match encode(&Header::default(), &claims,
